@@ -2,7 +2,7 @@ import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 const browser=await chromium.launch({executablePath:process.env.CHROME_PATH||'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--enable-unsafe-swiftshader','--use-angle=swiftshader']});
-const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+const page=await browser.newPage({locale:'en-US'});const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
 try{await page.goto('http://127.0.0.1:5173');await page.waitForFunction(()=>window.__game);
 const report=await page.evaluate(()=>{const g=window.__game,p=g.player;const stairs=[];g.input.clear();
 for(const [x,z] of [[40,21],[-57,5]]){p.position.set(x,0,z);p.velocity.set(0,0,0);p.grounded=true;p.crouched=false;p.yaw=0;g.input.keys.add('KeyW');let max=0;for(let i=0;i<720;i++){p.update(1/120,g.input,g.map);max=Math.max(max,p.position.y);if(p.position.y>=8.39)break;}g.input.clear();stairs.push({x,height:max,position:p.position.toArray()});}

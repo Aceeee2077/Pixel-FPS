@@ -1,0 +1,280 @@
+/**
+ * Every user-facing string in the game, in one reviewable place. The game ships exactly two
+ * locales, so a flat key -> [中文, English] table plus the `t()` lookup below keeps translations
+ * together and avoids pulling in an i18n runtime.
+ *
+ * Copy that already lives next to its own data (map themes and blurbs in `Maps.ts`, finish names in
+ * `WeaponAppearance.ts`) is keyed by id in the tables at the bottom and reached through the
+ * accessors, so those modules stay untouched.
+ */
+export type Lang = 'zh' | 'en';
+export const LANGS: readonly Lang[] = ['zh', 'en'];
+type Pair = readonly [string, string];
+
+const DICT: Record<string, Pair> = {
+    "net.title": ["联机对战","ONLINE MATCH"],
+    "net.intro": ["最多 8 人自由混战。房主选择地图，分享房间码即可加入。","Free for all with up to 8 players. The host chooses the map; friends join with the room code."],
+    "net.name": ["玩家昵称","PLAYER NAME"],
+    "net.code": ["8 位房间码","8 CHARACTER ROOM CODE"],
+    "net.create": ["创建房间","CREATE ROOM"],
+    "net.join": ["加入房间","JOIN ROOM"],
+    "net.connecting": ["正在建立连接，请稍候…","Connecting, please wait…"],
+    "net.connectionFailed": ["连接失败，请检查网络或房间码后重试。","Connection failed. Check your network and room code, then retry."],
+    "net.timeout": ["连接超时。请检查网络后重新加入房间。","Connection timed out. Check your network and rejoin."],
+    "net.hostLeft": ["房主已离开，房间已关闭。","The host left. The room is now closed."],
+    "net.unavailable": ["房间已满、已结束或版本不一致。","The room is full, finished, or uses a different version."],
+    "net.roomReady": ["房间 {code} 已创建，点击屏幕上的房间码可复制邀请链接。","Room {code} is ready. Click the room code to copy an invite."],
+    "net.playerJoined": ["有玩家加入房间","A player joined the room"],
+    "net.playerLeft": ["有玩家离开房间","A player left the room"],
+    "net.copy": ["复制邀请链接","COPY INVITE"],
+    "net.copied": ["邀请链接已复制","Invite link copied"],
+    "net.waitHost": ["等待房主开始下一局","Waiting for the host to start the next round"],
+    "net.note": ["房主需保持页面开启；暂停菜单不会暂停联机对局。","Keep the host page open. The pause menu does not pause an online match."],
+    "net.room": ["房间","ROOM"],
+    "pickup.health": ["拾取血包 · +{n} 生命","MEDKIT · +{n} HEALTH"],
+    "pickup.ammo": ["拾取弹夹 · +{n} 备弹","MAGAZINES · +{n} RESERVE"],
+    /* ---------- lobby header ---------- */
+    'nav.armory': ['武器库', 'ARMORY'],
+    'nav.settings': ['设置', 'SETTINGS'],
+    'nav.quit': ['退出 ↗', 'QUIT ↗'],
+    'nav.localPlay': ['本地对战', 'LOCAL PLAY'],
+    'nav.arenas': ['10 张地图', '10 ARENAS'],
+    /* ---------- lobby hero ---------- */
+    'hero.brandTag': ['方块碰撞，玩法不同。', 'THE BLOCKS HIT DIFFERENT.'],
+    'hero.eyebrow': ['小方块，大能量。', 'SMALL BLOCKS. BIG ENERGY.'],
+    'hero.title': ['随手上场。', 'DROP IN.'],
+    'hero.titleAccent': ['自带高光。', 'STAND OUT.'],
+    'hero.copy': ['十张地图，六把武器，一局五分钟的自由混战。', 'Ten arenas, six weapons, one five minute free for all.'],
+    'hero.copy2': ['选图、练枪、入场。', 'Pick a map, level a gun, drop in.'],
+    'hero.tag.player': ['玩家 01', '01 PLAYER'],
+    'hero.tag.bots': ['BOT 07', '07 BOTS'],
+    'hero.tag.maps': ['地图 10', '10 MAPS'],
+    'hero.tag.levels': ['等级 0–10', 'LV 0–10'],
+    'hero.loadout': ['你的配装', 'YOUR LOADOUT'],
+    'hero.loadoutAction': ['武器库 · 升级武器 ↗', 'ARMORY · LEVEL UP ↗'],
+    /* ---------- map picker ---------- */
+    'map.select': ['选择地图', 'SELECT ARENA'],
+    'map.random': ['随机', 'RANDOM'],
+    'map.randomSmall': ['每局随机', 'random each match'],
+    'map.randomRotation': ['随机轮换', 'RANDOM ROTATION'],
+    'map.rotation': ['地图轮换', 'ARENA ROTATION'],
+    'map.rotationName': ['每局随机地图', 'Random arena each match'],
+    'map.rotationTheme': ['每局从十张地图中随机抽取', 'A random pick from all ten arenas each match'],
+    'map.rotationCopy': ['不动脑子选图：每局从十张完全不同的地形里随机抽一张。', 'Let the game decide: one of ten completely different terrains, drawn at random every match.'],
+    'map.planLabel': ['平面示意', 'top-down plan'],
+    'map.spawns': ['{n} 出生点', '{n} spawns'],
+    /* ---------- lobby footer ---------- */
+    'foot.ready': ['准备好了就开始', 'READY WHEN YOU ARE'],
+    'foot.mode': ['自由混战', 'FREE FOR ALL'],
+    'foot.players': ['8 名玩家', '8 players'],
+    'foot.minutes': ['5 分钟', '5 minutes'],
+    'foot.note': ['用方块搭成，为对战而生。', 'BUILT FROM BLOCKS. MADE FOR PLAY.'],
+    /* ---------- language toggle ---------- */
+    'lang.switch': ['切换语言', 'Switch language'],
+    'lang.notice': ['语言已切换为中文。', 'Language switched to English.'],
+    /* ---------- HUD ---------- */
+    'hud.yourScore': ['你的得分', 'YOUR SCORE'],
+    'hud.health': ['生命值', 'HEALTH'],
+    'hud.knife': ['匕首', 'KNIFE'],
+    'hud.scoreboard': ['记分板', 'SCOREBOARD'],
+    'hud.pause': ['暂停', 'PAUSE'],
+    'hud.freeForAll': ['自由混战', 'FREE FOR ALL'],
+    'hud.stabDamage': ['轻击 / 重击伤害', 'LIGHT / HEAVY STAB DAMAGE'],
+    'hud.reloading': ['换弹中 {s}s', 'RELOADING {s}s'],
+    'hud.pressReload': ['按 R 换弹', 'PRESS R TO RELOAD'],
+    'hud.outOfAmmo': ['没有弹药 · 切换武器', 'OUT OF AMMO · SWITCH WEAPON'],
+    'hud.spawnProtection': ['出生保护 · 开火解除保护', 'SPAWN PROTECTION · FIRING ENDS PROTECTION'],
+    'hud.drawingKnife': ['正在出刀…', 'DRAWING KNIFE…'],
+    'hud.meleeHint': ['左键轻击 · 右键重击 · F 检视', 'LMB LIGHT STAB · RMB HEAVY STAB · F INSPECT'],
+    'hud.backstab': ['背刺', 'BACKSTAB'],
+    'hud.deathEyebrow': ['马上重返战场', 'BACK IN THE FIGHT SOON'],
+    'hud.deathTitle': ['你被淘汰', 'YOU WERE ELIMINATED'],
+    'hud.deathKiller': ['{name} 拿下了这一枪。', '{name} got the last shot.'],
+    'hud.respawning': ['正在安全点重生', 'RESPAWNING AT A SAFE LOCATION'],
+    /* ---------- elimination callouts ---------- */
+    'elim.2': ['双杀', 'DOUBLE KILL'],
+    'elim.3': ['三杀', 'TRIPLE KILL'],
+    'elim.5': ['狂暴', 'RAMPAGE'],
+    'elim.10': ['无人能挡', 'UNSTOPPABLE'],
+    'elim.default': ['击杀', 'ELIMINATION'],
+    'elim.score': ['+1 分', '+1 SCORE'],
+    /* ---------- scoreboard ---------- */
+    'board.standings': ['实时排名', 'LIVE STANDINGS'],
+    'board.title': ['对战名单', 'THE LINEUP'],
+    'board.players': ['8 名玩家', '08 PLAYERS'],
+    'board.hint': ['按住 TAB 查看 · 击杀即得分', 'HOLD TAB TO VIEW · KILLS = SCORE'],
+    'board.rank': ['排名', 'RANK'],
+    'board.player': ['玩家', 'PLAYER'],
+    'board.kills': ['击杀', 'KILLS'],
+    'board.deaths': ['死亡', 'DEATHS'],
+    'board.score': ['得分', 'SCORE'],
+    'board.you': ['你', 'YOU'],
+    /* ---------- pause ---------- */
+    'pause.eyebrow': ['喘口气', 'TAKE A BREATHER'],
+    'pause.title': ['已暂停', 'PAUSED'],
+    'pause.copy': ['比赛会等你。', 'The match will wait for you.'],
+    'pause.resume': ['继续游戏', 'RESUME'],
+    'pause.restart': ['重新开始', 'RESTART MATCH'],
+    'pause.menu': ['主菜单', 'MAIN MENU'],
+    /* ---------- results ---------- */
+    'result.kicker': ['本局结束', 'ROUND COMPLETE'],
+    'result.title': ['比赛结束', 'MATCH OVER'],
+    'result.winner': ['获胜者', 'WINNER'],
+    'result.joint': ['并列第一', 'JOINT TOP SCORE'],
+    'result.eliminations': ['{n} 次击杀', '{n} ELIMINATIONS'],
+    'result.again': ['再来一局', 'PLAY AGAIN'],
+    'result.menu': ['主菜单', 'MAIN MENU'],
+    'result.xp': ['本局武器经验', 'WEAPON XP EARNED'],
+    'result.levelUp': ['升级', 'LEVEL UP'],
+    /* ---------- quit ---------- */
+    'quit.eyebrow': ['GG，下次再战。', 'GG. SEE YOU IN THE YARD.'],
+    'quit.title': ['结束', 'OVER & OUT'],
+    'quit.copy': ['关闭此标签页即可退出。', 'You can close this tab to quit.'],
+    'quit.back': ['返回主菜单 ↗', 'BACK TO MENU ↗'],
+    /* ---------- dialog chrome ---------- */
+    'dialog.close': ['关闭对话框', 'Close dialog'],
+    'notice.fullscreenUnsupported': ['当前浏览器不支持全屏。', 'Fullscreen is unavailable in this browser.'],
+    /* ---------- pointer lock fallback ---------- */
+    'capture.requesting': ['正在启用鼠标控制… 按 ESC 取消', 'Enabling mouse control… press ESC to cancel'],
+    'capture.compatTitle': ['兼容鼠标模式', 'Compatibility mouse mode'],
+    'capture.compatHint': ['移动瞄准 · 靠近边缘或按方向键转向 · ESC 暂停', 'Move to aim · steer at screen edges or with arrow keys · ESC pauses'],
+    'capture.help': ['鼠标帮助 ↗', 'MOUSE HELP ↗'],
+    'mouse.eyebrow': ['鼠标控制', 'MOUSE CONTROLS'],
+    'mouse.title': ['鼠标控制', 'Mouse controls'],
+    'mouse.why': ['当前浏览器未能授予鼠标锁定，游戏已启用兼容控制。', 'This browser did not grant pointer lock, so the game enabled compatibility controls.'],
+    'mouse.how': ['移动鼠标瞄准；靠近画面边缘或按方向键可持续转向。WASD 移动、左键射击、右键开镜保持可用。鼠标离开游戏窗口时会暂停。', 'Move the mouse to aim; steer continuously by moving toward the screen edge or with the arrow keys. WASD, left-click fire and right-click scope all still work. Pausing happens when the mouse leaves the game window.'],
+    'mouse.full': ['完整的 FPS 鼠标锁定体验：复制下面的地址，在独立 Chrome 或 Edge 窗口中打开，再点击 PLAY。', 'For the full FPS pointer-lock experience, copy the address below into a standalone Chrome or Edge window and press PLAY.'],
+    'mouse.address': ['游戏地址', 'Game address'],
+    'mouse.copy': ['复制游戏地址', 'Copy game address'],
+    'mouse.resume': ['继续游戏 ↗', 'RESUME ↗'],
+    'mouse.copied': ['游戏地址已复制，请粘贴到 Chrome / Edge 地址栏。', 'Game address copied. Paste it into a Chrome / Edge window.'],
+    'mouse.copyFailed': ['请选中上方地址并手动复制。', 'Select the address above and copy it manually.'],
+    /* ---------- armory ---------- */
+    'armory.eyebrow': ['MAKE IT YOURS / 配装', 'MAKE IT YOURS / LOADOUT'],
+    'armory.title': ['武器库', 'THE ARMORY'],
+    'armory.saved': ['✓ 自动保存', '✓ SAVED AUTOMATICALLY'],
+    'armory.model': ['游戏内模型', 'IN-GAME MODEL'],
+    'armory.dragHint': ['拖动旋转 · 双击复位', 'Drag to rotate · double-click to reset'],
+    'armory.previewAria': ['实际 3D 武器预览；拖动或使用方向键旋转，双击复位', 'Live 3D weapon preview; drag or use the arrow keys to rotate, double-click to reset'],
+    'armory.reference': ['参考外观', 'REFERENCE LOOK'],
+    'armory.slotPrimary': ['01 / PRIMARY', '01 / PRIMARY'],
+    'armory.slotSecondary': ['02 / SECONDARY', '02 / SECONDARY'],
+    'armory.slotMelee': ['03 / MELEE', '03 / MELEE'],
+    'armory.gunCopy': ['金属枪身 · 分色护板 · 立体机械细节', 'Metal body · split panels · modelled internals'],
+    'armory.knifeCopy': ['{label} · 轻击 45 / 重击 90', '{label} · light 45 / heavy 90'],
+    'armory.primarySection': ['01 / 主武器', '01 / PRIMARY WEAPONS'],
+    'armory.equipHint': ['点击装备并预览', 'Click to equip and preview'],
+    'armory.equipped': ['✓ 已装备', '✓ EQUIPPED'],
+    'armory.select': ['选择', 'SELECT'],
+    'armory.unlockAt': ['LV {n} 解锁', 'UNLOCKS AT LV {n}'],
+    'armory.skinTitle': ['M4A4 涂装', 'M4A4 FINISHES'],
+    'armory.previewGlock': ['02 / GLOCK 预览 ↗', '02 / PREVIEW GLOCK ↗'],
+    'armory.levelsSection': ['02 / 武器等级', '02 / WEAPON LEVELS'],
+    'armory.levelsHint': ['每局结算发放经验 · LV 0 → 1 需要 100 XP', 'XP is awarded at match end · LV 0 → 1 needs 100 XP'],
+    'armory.toNext': ['距 LV {n} 还需 {x} XP', '{x} XP TO LV {n}'],
+    'armory.maxed': ['已满级', 'MAX LEVEL'],
+    'armory.knivesSection': ['03 / 匕首', '03 / KNIVES'],
+    'armory.knivesHint': ['五种外观 · 相同属性 · 等级解锁', 'Five finishes · identical stats · unlocked by level'],
+    'armory.footer': ['下局生效 · <b>3</b> 切换匕首 · <b>F</b> 检视武器 · 升级解锁涂装', 'Applies next match · <b>3</b> switches knife · <b>F</b> inspects · level up to unlock finishes'],
+    'armory.done': ['完成配装', 'DONE'],
+    'slot.primary': ['主武器', 'PRIMARY'],
+    'slot.sidearm': ['手枪', 'SIDEARM'],
+    'slot.melee': ['近战', 'MELEE'],
+    'levelChip.aria': ['{name} 等级 {n}', '{name} level {n}'],
+    'level.max': ['已满级 LV {n}', 'MAX LV {n}'],
+    /* ---------- settings ---------- */
+    'set.eyebrow': ['调校一下', 'DIAL IT IN'],
+    'set.title': ['设置', 'SETTINGS'],
+    'set.controls': ['控制与视角', 'CONTROLS & CAMERA'],
+    'set.sensitivity': ['鼠标灵敏度', 'Mouse sensitivity'],
+    'set.fov': ['视野范围', 'Field of view'],
+    'set.audio': ['音频', 'AUDIO'],
+    'set.volume': ['主音量', 'Master volume'],
+    'set.sfx': ['音效', 'Sound effects'],
+    'set.display': ['显示与对局', 'DISPLAY & MATCH'],
+    'set.quality': ['画质', 'Graphics quality'],
+    'set.difficulty': ['BOT 难度', 'Bot difficulty'],
+    'set.fullscreen': ['切换全屏 ⛶', 'TOGGLE FULLSCREEN ⛶'],
+    'set.done': ['完成 ✓', 'DONE ✓'],
+    'set.saved': ['自动保存在本机。', 'Saved automatically on this device.'],
+    'quality.low': ['低', 'low'],
+    'quality.medium': ['中', 'medium'],
+    'quality.high': ['高', 'high'],
+    'difficulty.easy': ['简单', 'easy'],
+    'difficulty.normal': ['普通', 'normal'],
+    'difficulty.hard': ['困难', 'hard'],
+    /* ---------- added after the UI rewrite ---------- */
+    'nav.play': ['开始游戏', 'PLAY'],
+    'melee.light': ['轻击', 'LIGHT STAB'],
+    'melee.heavy': ['重击', 'HEAVY STAB'],
+    'armory.rifleFinish': ['{name} 涂装', '{name} FINISH'],
+    'armory.fieldFinish': ['FIELD / 战术配色', 'FIELD / TACTICAL'],
+    'set.language': ['语言', 'LANGUAGE'],
+};
+
+/** English/Chinese copy for the data modules, keyed by the ids they already use. */
+const MAP_THEME: Record<string, Pair> = {
+    blockyard: ['货运堆场 · 温带', 'Freight yard · Temperate'],
+    duneridge: ['沙漠峡谷 · 干旱', 'Desert canyon · Arid'],
+    harborline: ['集装箱港口 · 海湾', 'Container port · Bay'],
+    subway: ['地下车站 · 混凝土', 'Underground station · Concrete'],
+    vertical: ['屋顶都市 · 黄昏', 'Rooftop city · Dusk'],
+    glacier: ['冰原前哨 · 极地', 'Glacier outpost · Polar'],
+    arena: ['下沉竞技场 · 石造', 'Sunken arena · Stone'],
+    factory: ['重工车间 · 钢铁', 'Heavy workshop · Steel'],
+    temple: ['丛林神庙 · 潮湿', 'Jungle temple · Humid'],
+    oilrig: ['海上钻井平台 · 钢构', 'Offshore rig · Steel frame'],
+};
+
+const MAP_BLURB: Record<string, Pair> = {
+    blockyard: ['仓库、天桥与集装箱堆是原始赛场：中距离交叉火力，屋顶与高空走廊决定控场。', 'Warehouses, catwalks and container stacks make up the original arena: mid-range crossfire where the roofs and high walkways decide who controls the map.'],
+    duneridge: ['干河床把沙丘与遗迹切成两半，钻井架与瞭望塔控制制高点。掩体稀疏，长枪占优。', 'A dry riverbed splits the dunes from the ruins, while the derrick and watchtower hold the high ground. Cover is sparse, so long guns win.'],
+    harborline: ['两侧码头夹着浅水港池，龙门吊横跨全场。船上、屋顶与吊臂三条高度线同时开火。', 'Docks on both sides flank a shallow basin with a gantry crane spanning the whole map. Ship deck, rooftops and the crane arm all fire at once.'],
+    subway: ['下沉站台与检修沟横贯全图，天桥在头顶交错。近距离遭遇多，霰弹与刀在这里最舒服。', 'A sunken platform and an inspection pit cut across the map while catwalks criss-cross overhead. Fights are close and fast, so shotguns and knives feel at home.'],
+    vertical: ['三层高度的街区：地面街道、五米天台、十三米高空连廊。占住屋顶的人能俯射整张图。', 'A district stacked three levels high: street level, five metre terraces and a thirteen metre elevated walkway. Whoever holds the roofs can shoot down across the whole map.'],
+    glacier: ['冰墙迷宫中间横着一条冰裂缝，三座冰桥是唯一的高线。雷达站土丘是全图最高的火力点。', 'A crevasse runs through a maze of ice walls, and three ice bridges are the only high route. The radar mound is the tallest firing position on the map.'],
+    arena: ['一座三层看台的下沉斗兽场：坑底近战、看台中距离、四角塔楼远射。没有一条长直线。', 'A sunken colosseum with three tiers of stands: melee in the pit, mid-range on the terraces, long shots from the four corner towers. There is not a single long sightline.'],
+    factory: ['厂房里三排机器把地面切成走廊，两层检修栈桥从头顶穿过。储罐区与装卸区是外场的硬掩体。', 'Three rows of machines slice the factory floor into corridors, with a two level maintenance catwalk crossing overhead. The tank farm and loading bays are the hard cover outside.'],
+    temple: ['四层石阶金字塔被树冠走廊连成一体，水池与断柱提供掩护。高低差就是这张图的全部战术。', 'A four tier stone pyramid is stitched together by canopy walkways, with pools and broken columns for cover. Verticality is the whole tactics of this map.'],
+    oilrig: ['悬在深海上的三层钢铁平台：主甲板、钻井台、直升机坪。掉进海里只能爬梯子回来。', 'A three level steel platform hanging over deep water: main deck, derrick and helipad. Fall into the sea and the only way back is the ladder.'],
+};
+
+const KNIFE_LABEL: Record<string, Pair> = {
+    classic: ['战术匕首', 'Combat Knife · Ivory'],
+    'butterfly-emerald': ['蝴蝶刀 · 绿宝石', 'Butterfly · Emerald'],
+    'butterfly-fade': ['蝴蝶刀 · 渐变之色', 'Butterfly · Fade'],
+    'karambit-emerald': ['爪子刀 · 绿宝石', 'Karambit · Emerald'],
+    'm9-ruby': ['M9 刺刀 · 红宝石', 'M9 Bayonet · Ruby'],
+};
+
+const SKIN_NAME: Record<string, Pair> = {
+    standard: ['FIELD / 原版', 'FIELD / STANDARD'],
+    asimov: ['ASIMOV / 白橙', 'ASIMOV / WHITE-ORANGE'],
+};
+
+let current: Lang = 'zh';
+
+export function getLang(): Lang { return current; }
+
+export function setLang(lang: Lang) {
+    current = lang === 'en' ? 'en' : 'zh';
+    document.documentElement.lang = current === 'zh' ? 'zh-CN' : 'en';
+    document.documentElement.dataset.lang = current;
+}
+
+export function toggleLang(): Lang { return current === 'zh' ? 'en' : 'zh'; }
+
+export function tr(pair: Pair): string { return current === 'zh' ? pair[0] : pair[1]; }
+
+/** Looks up `key` and fills `{name}` placeholders. Unknown keys fall through unchanged. */
+export function t(key: string, vars?: Record<string, string | number>): string {
+    const pair = DICT[key];
+    let text = pair ? tr(pair) : key;
+    if (vars) for (const name in vars) text = text.split('{' + name + '}').join(String(vars[name]));
+    return text;
+}
+
+export function mapTheme(def: { id: string; theme: string }) { return MAP_THEME[def.id] ? tr(MAP_THEME[def.id]) : def.theme; }
+export function mapBlurb(def: { id: string; blurb: string }) { return MAP_BLURB[def.id] ? tr(MAP_BLURB[def.id]) : def.blurb; }
+export function knifeName(style: string, fallback: string) { return KNIFE_LABEL[style] ? tr(KNIFE_LABEL[style]) : fallback; }
+export function finishName(id: string, fallback: string) { return SKIN_NAME[id] ? tr(SKIN_NAME[id]) : fallback; }

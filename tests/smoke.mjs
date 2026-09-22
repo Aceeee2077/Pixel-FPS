@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 fs.mkdirSync('test-results',{recursive:true});
 const browser=await chromium.launch({executablePath:process.env.CHROME_PATH||'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true,args:['--enable-unsafe-swiftshader','--use-angle=swiftshader']});
-const page=await browser.newPage({viewport:{width:1440,height:900}});
+const page=await browser.newPage({viewport:{width:1440,height:900},locale:'en-US'});
 const errors=[],checks=[];
 page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
 const check=(name,value)=>{assert.ok(value,name);checks.push(name);console.log('PASS',name);};
@@ -16,7 +16,7 @@ try{
   await page.goto('http://127.0.0.1:5173');await page.waitForFunction(()=>window.__game);await page.screenshot({path:'test-results/menu.png'});
   check('Main menu and PLAY render',await page.locator('#play').isVisible());
   await page.locator('#menu nav [data-action="loadout"]').click();check('Four primary loadout cards',await page.locator('.weapon-card').count()===4);await page.screenshot({path:'test-results/loadout.png'});await page.locator('#dialog .primary').click();
-  await page.locator('#menu nav [data-action="settings"]').click();await page.getByLabel('Field of view').fill('105');await page.getByLabel('Mouse sensitivity').fill('1.25');await page.getByLabel('Graphics quality').selectOption('low');await page.screenshot({path:'test-results/settings.png'});await page.locator('#dialog [data-action="close"]').last().click();
+  await page.locator('#menu nav [data-action="settings"]').click();await page.locator('#dialog [data-setting="fov"]').fill('105');await page.locator('#dialog [data-setting="sensitivity"]').fill('1.25');await page.locator('#dialog [data-setting="quality"]').selectOption('low');await page.screenshot({path:'test-results/settings.png'});await page.locator('#dialog [data-action="close"]').last().click();
   await page.reload();await page.waitForFunction(()=>window.__game);check('Settings persist across reload',await page.evaluate(()=>window.__game.settings.data.fov===105&&window.__game.settings.data.sensitivity===1.25));
   await page.locator('#play').click();await page.waitForTimeout(300);check('PLAY starts FFA and locks mouse',(await state()).running&&(await state()).locked);check('Seven bots spawn',await page.evaluate(()=>window.__game.bots.length===7));
   await freeze();await fixture();const before=await state();await page.mouse.move(790,450);await page.waitForTimeout(70);check('Mouse look changes yaw',(await state()).yaw!==before.yaw);await fixture();

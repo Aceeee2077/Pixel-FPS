@@ -4,7 +4,7 @@
 
 **An original low-poly, fast-paced browser FPS**
 
-Ten maps · Seven bots · Six weapons · Zero external assets
+Ten maps · Solo / 8-player online · Random supplies · Six weapons · Bilingual UI
 
 <img src="docs/menu.png" width="860" alt="BlockStrike main menu">
 
@@ -13,7 +13,7 @@ Ten maps · Seven bots · Six weapons · Zero external assets
 ![Three.js](https://img.shields.io/badge/Three.js-r180-000000?logo=three.js&logoColor=white)
 ![external 3D assets](https://img.shields.io/badge/external%203D%20assets-0-2ea44f)
 
-[Play online](https://blockstrike-eight.vercel.app/) | [Quick start](#quick-start) | [Controls](#controls) | [Maps](#maps) | [Weapon progression](#weapon-progression) | [Project layout](#project-layout) | [中文](README.md)
+[Play online](https://blockstrike-eight.vercel.app/) | [Quick start](#quick-start) | [Controls](#controls) | [Maps](#maps) | [Weapon progression](#weapon-progression) | [Online](#online) | [Project layout](#project-layout) | [中文](README.md)
 
 </div>
 
@@ -23,7 +23,11 @@ Ten maps · Seven bots · Six weapons · Zero external assets
 
 BlockStrike is a fast-paced first-person shooter that runs in the browser, built with Vite + TypeScript + Three.js. Terrain, characters, weapons, particles and audio are all generated in code. The ten PNGs in the repository root are only armory preview images for weapon finishes - every 3D asset in the game comes from procedural geometry, canvas textures and Web Audio synthesis. No external 3D models or audio files are used.
 
-The mode is **Free For All**: you and seven bots fight it out over five minutes.
+The mode is **Free For All**: fight seven bots solo, or create a room for up to eight friends. Matches last five minutes. Random magazines and medkits replenish reserve ammunition and health when you walk over them.
+
+Choose ONLINE MATCH in the lobby to create a room or join with an eight-character code; hosts can share an invite link. The host owns the map, clock and every damage decision, while guests predict only their own movement and view. Vercel still serves the static Vite build. PeerJS provides public signalling and WebRTC carries gameplay; restricted networks may require a TURN relay. The host must keep the page open, and online matches do not award local weapon XP. See the [deployment and testing guide](docs/ONLINE.md).
+
+The interface is bilingual: switch with **中文 · EN** in the top right of the lobby, or from Settings after pausing. The choice is stored locally, and a first visit follows your browser language.
 
 <p align="center">
   <img src="docs/gameplay.png" width="48%" alt="In-game">
@@ -62,6 +66,7 @@ npm run preview
 | Reload | <kbd>R</kbd> |
 | Primary / pistol / knife | <kbd>1</kbd> / <kbd>2</kbd> / <kbd>3</kbd> |
 | Cycle weapons | Mouse wheel |
+| Copy invite link | Click the room code on screen during a match |
 | Scoreboard | Hold <kbd>Tab</kbd> |
 | Pause | <kbd>Esc</kbd> |
 
@@ -126,7 +131,28 @@ Damage resolves on the swing's hit frame, so whiffing, getting punished mid-swin
 
 ## Match rules
 
-Free For All: 1 player + 7 bots, 5 minutes, +1 point per kill, respawn at a safe point after 3 seconds. Bots are hostile to each other and will also attack you. Pausing freezes the entire match.
+Free For All: solo is 1 player + 7 bots, online is up to 8 players, a match lasts 5 minutes, a kill is +1 point, and respawn happens at a safe point after 3 seconds. In solo, bots are hostile to each other and will also attack you, and pausing freezes the entire match.
+
+## Online
+
+Online play is a friends-and-room-code mode: no accounts, no matchmaking, no host migration. Create a room, then share the eight-character code (letters A-Z plus digits 2-9) or the invite link, which opens the online dialog with the code already filled in. Rooms hold up to 8 players and never fill with bots; the room closes when the host leaves.
+
+The host is the single source of truth: map, clock, health, ammo, hits, melee, supplies, respawns and scoring are all decided by the host and replicated to guests, who predict only their own movement and view and get corrected when they drift too far. The host browser must stay open - keep the tab in the foreground if you can, since browsers may throttle or sleep background tabs.
+
+The pause menu only pauses your own input; an online match keeps running. The host can start another round after the results screen, everyone else waits for the host, and returning to the lobby leaves the room. Online matches do not award local weapon XP.
+
+[PeerJS public signalling](https://peerjs.com/client/getting-started) establishes the WebRTC DataChannel by default, after which match traffic flows directly between the players and the host - no server-side room state is required. Corporate networks, carrier NAT or firewalls may need a TURN relay; use `VITE_PEER_*` and `VITE_ICE_SERVERS` to point at your own signalling or relay service. See the [deployment and testing guide](docs/ONLINE.md) for the full setup.
+
+## Random supplies
+
+Every map spawns 5 magazines and 5 medkits on points taken from the connected navigation graph, where a player can stand without clipping into geometry, spread apart where possible.
+
+| Item | Effect | Respawn |
+| --- | --- | --- |
+| Medkit | Heals up to 35 HP, capped at 100 HP | New location after 20 seconds |
+| Magazine | Adds one magazine's worth of reserve ammo to the primary and the pistol, never above their reserve caps, and never straight into the current magazine | New location after 15 seconds |
+
+Walk over a supply to pick it up - no key needed - and you cannot pick one up through a wall. A supply is not consumed while you are already at full health or full reserve ammo. Bots pick up supplies in solo; in online play the host picks the single winner and replicates it to everyone.
 
 ## Project layout
 
@@ -138,13 +164,16 @@ Free For All: 1 player + 7 bots, 5 minutes, +1 point per kill, respawn at a safe
 | `src/bots` | Seven AI states, A* pathfinding, ground and elevated navigation graphs |
 | `src/world` | `MapKit` terrain helpers, ten map definitions, AABB collision, safe spawns |
 | `src/game` | Hit regions, FFA rules, timing and ranking (`GameMode` is extensible) |
+| `src/network` | Room signalling, host-authoritative state sync and guest movement prediction |
+| `src/world/PickupManager.ts` | Random supply points, pickup checks and respawn timers |
 | `src/core/Progress.ts` | Weapon levels, XP curve and finish unlocks |
+| `src/core/I18n.ts` | Bilingual string tables and language switching |
 | `src/ui` | Main menu, loadout, settings, HUD, pause, scoreboard and results |
-| `src/effects` / `src/audio` | Capped instanced particle pool and Web Audio synthesis |
+| `src/effects` / `src/audio` | Capped instanced particle pool plus synthesised gunshots, footsteps and knife audio |
 
 ## Development and verification
 
-`npm test` runs browser acceptance tests against a running local dev server (`world` + `smoke` + `melee` + `maps` + `progress`). It uses the Chrome installed on Windows by default; set `CHROME_PATH` to point at another browser. Tests run on software WebGL, so performance numbers do not reflect real GPU frame rates. Results and screenshots are written to `test-results/`, where `map-*.png` are real in-game screenshots of the ten maps.
+`npm test` runs browser acceptance tests against a running local dev server (`world` + `smoke` + `melee` + `maps` + `progress`). Four more scripts run on their own: `npm run test:pickups` validates supply placement and pickup rules on all ten maps, `npm run test:audio` inspects the synthesised gunshots inside an `OfflineAudioContext`, `npm run test:capture` covers the pointer-lock compatibility mode, and `npm run test:online` starts its own signalling server and a separate Vite server (ports 5174 / 9001) to drive two real browser contexts through a full WebRTC match without touching public signalling. It uses the Chrome installed on Windows by default; set `CHROME_PATH` to point at another browser. The suite pins the interface to English (Playwright locale `en-US`) because several assertions match English HUD strings directly. Tests run on software WebGL, so performance numbers do not reflect real GPU frame rates. Results and screenshots are written to `test-results/`, where `map-*.png` are real in-game screenshots of the ten maps.
 
 <details>
 <summary><b>What the acceptance scripts actually check</b></summary>
@@ -172,13 +201,15 @@ For an FPS mouse experience unrestricted by window bounds, copy the game URL int
 
 ## Known limitations
 
-The current version is offline single-player bot matches; there is no networked multiplayer. A minimap, other game modes and mobile touch controls are not implemented yet. Graphics Low disables shadows and caps the pixel ratio. Actual frame rate depends on your device and browser, and 60 FPS on low-end hardware is not guaranteed.
+Online play is a friends-and-room-code mode: there is no dedicated server, no matchmaking, no host migration and no competitive anti-cheat, the host browser must stay open, networks that cannot reach public signalling need their own TURN relay, and online matches award no local weapon XP. A minimap, other game modes and mobile touch controls are not implemented yet. Graphics Low disables shadows and caps the pixel ratio. Actual frame rate depends on your device and browser, and 60 FPS on low-end hardware is not guaranteed.
 
 ## Deployment
 
 This is a fully static site. The build output lives in `dist/` and can be hosted on any static host.
 
 **Vercel**: import this repository at [vercel.com/new](https://vercel.com/new). No configuration is needed - Vercel detects Vite automatically, with `npm run build` as the build command and `dist` as the output directory. Every push to `main` redeploys automatically afterwards.
+
+To point the build at your own signalling server or add TURN, set `VITE_PEER_HOST`, `VITE_PEER_PORT`, `VITE_PEER_PATH`, `VITE_PEER_SECURE` and `VITE_ICE_SERVERS` under Project → Settings → Environment Variables in Vercel, then redeploy. These values are bundled into the public browser code, so never store service credentials in them.
 
 **Other platforms**: run `npm run build` and upload the whole `dist/` directory. No Node runtime is required.
 

@@ -7,7 +7,7 @@ const checks=[];
 const check=(name,condition)=>{assert.ok(condition,name);checks.push(name);console.log('PASS',name);};
 try {
   for(const failure of ['rejected','event-only','missing','silent','delayed']) {
-    const context=await browser.newContext({viewport:{width:1000,height:700}});
+    const context=await browser.newContext({viewport:{width:1000,height:700},locale:'en-US'});
     const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
     await page.addInitScript(failure=>{
       window.__captureRequests=0;

@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { weaponModel } from '../weapons/WeaponModel';
 import type { WeaponId } from '../weapons/WeaponConfig';
 import type { WeaponAppearance } from '../weapons/WeaponAppearance';
+import { t } from '../core/I18n';
 
 export class ArmoryPreview {
     private renderer: THREE.WebGLRenderer;
@@ -23,7 +24,7 @@ export class ArmoryPreview {
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
         this.renderer.toneMappingExposure = 1.2;
         const canvas = this.renderer.domElement;
-        canvas.setAttribute('aria-label', '实际 3D 武器预览；拖动或使用方向键旋转，双击复位');
+        canvas.setAttribute('aria-label', t('armory.previewAria'));
         canvas.tabIndex = 0;
         this.scene.add(new THREE.HemisphereLight(0xe5f4ec, 0x465148, 2));
         const key = new THREE.DirectionalLight(0xfff5dc, 3); key.position.set(-2, 4, 3); this.scene.add(key);
@@ -50,7 +51,7 @@ export class ArmoryPreview {
     }
     private reset() { this.yaw=1.22; this.pitch=-.08; }
     show(host: HTMLElement, id: WeaponId, appearance: WeaponAppearance) {
-        this.host=host; host.append(this.renderer.domElement); this.reset();
+        this.host=host; host.append(this.renderer.domElement); this.renderer.domElement.setAttribute('aria-label', t('armory.previewAria')); this.reset();
         this.pivot.clear();
         const model=weaponModel(id,false,appearance);
         const bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3());

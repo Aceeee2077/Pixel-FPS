@@ -8,8 +8,21 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 0.0.0.0",
     "test": "node tests/world.mjs && node tests/smoke.mjs && node tests/melee.mjs && node tests/maps.mjs && node tests/progress.mjs",
-    "test:capture": "node tests/capture.mjs"
+    "test:capture": "node tests/capture.mjs",
+    "test:online": "node tests/online.mjs",
+    "test:pickups": "node tests/pickups.mjs",
+    "test:audio": "node tests/audio.mjs"
   },
-  "dependencies": { "three": "^0.180.0" },
-  "devDependencies": { "@types/three": "^0.180.0", "typescript": "~5.9.2", "vite": "^7.1.7", "playwright": "^1.55.0", "agent-browser": "^0.21.0" }
+  "dependencies": {
+    "peerjs": "^1.5.5",
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.180.0",
+    "agent-browser": "^0.21.0",
+    "peer": "^1.0.2",
+    "playwright": "^1.55.0",
+    "typescript": "~5.9.2",
+    "vite": "^7.1.7"
+  }
 }

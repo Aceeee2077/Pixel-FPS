@@ -4,7 +4,7 @@
 
 **原创低多边形快节奏浏览器 FPS**
 
-十张地图 · 七个 Bot · 六把武器 · 零外部资源
+十张地图 · 单机 / 8 人联机 · 随机补给 · 六把武器 · 中英双语
 
 <img src="docs/menu.png" width="860" alt="BlockStrike 主菜单">
 
@@ -13,7 +13,7 @@
 ![Three.js](https://img.shields.io/badge/Three.js-r180-000000?logo=three.js&logoColor=white)
 ![external 3D assets](https://img.shields.io/badge/external%203D%20assets-0-2ea44f)
 
-[在线试玩](https://blockstrike-eight.vercel.app/) ｜ [快速开始](#快速开始) ｜ [操作](#操作) ｜ [地图](#地图) ｜ [武器升级](#武器升级) ｜ [工程结构](#工程结构) ｜ [English](README-EN.md)
+[在线试玩](https://blockstrike-eight.vercel.app/) ｜ [快速开始](#快速开始) ｜ [操作](#操作) ｜ [地图](#地图) ｜ [武器升级](#武器升级) ｜ [联机](#联机) ｜ [工程结构](#工程结构) ｜ [English](README-EN.md)
 
 </div>
 
@@ -23,7 +23,11 @@
 
 BlockStrike 是一个跑在浏览器里的快节奏第一人称射击游戏，用 Vite + TypeScript + Three.js 写成。地形、角色、枪械、粒子和音效全部由代码生成——仓库根目录那十张 PNG 只是武器库里用来展示涂装的外观图，游戏内的 3D 内容全部来自程序化几何体、canvas 贴图与 Web Audio 合成，没有引入任何外部 3D 模型或音频素材。
 
-玩法是 **Free For All**：你和七个 Bot 在五分钟里互相厮杀。
+玩法是 **Free For All**：单机挑战七个 Bot，或创建最多 8 人的联机房间，与朋友进行五分钟自由混战。地图随机刷新弹夹和血包，走近自动拾取。
+
+联机入口在大厅底部，支持 8 位房间码和邀请链接，房主负责地图、时钟与全部伤害判定，客机只预测自己的移动与视角。Vercel 保持 Vite 静态部署即可；默认使用 PeerJS 公共信令和 WebRTC，严格网络可能需要 TURN 中继。联机对局不结算本地武器经验，房主需保持页面开启。部署、使用及测试说明见 [联机与补给指南](docs/ONLINE.md)。
+
+界面支持中英文切换：大厅右上角的 **中文 · EN** 随时可切，暂停后进入设置也能改，选择保存在本地，首次访问跟随浏览器语言。
 
 <p align="center">
   <img src="docs/gameplay.png" width="48%" alt="对局画面">
@@ -62,6 +66,7 @@ npm run preview
 | 换弹 | <kbd>R</kbd> |
 | 主武器 / 手枪 / 刀 | <kbd>1</kbd> / <kbd>2</kbd> / <kbd>3</kbd> |
 | 切换武器 | 滚轮 |
+| 复制邀请链接 | 对局中点击屏幕上的房间码 |
 | 记分板 | 按住 <kbd>Tab</kbd> |
 | 暂停 | <kbd>Esc</kbd> |
 
@@ -126,7 +131,28 @@ npm run preview
 
 ## 比赛
 
-Free For All：1 位玩家 + 7 个 Bot，5 分钟，击杀 +1 分，3 秒后安全点重生。各 Bot 互相敌对，也会攻击玩家。暂停时整场比赛冻结。
+Free For All：单机是 1 位玩家 + 7 个 Bot，联机最多 8 人，一局 5 分钟，击杀 +1 分，3 秒后安全点重生。单机里各 Bot 互相敌对，也会攻击玩家，暂停时整场比赛冻结。
+
+## 联机
+
+联机是好友房间模式，没有账号、匹配和房主迁移：创建房间后把 8 位房间码（字符取自 A-Z 与 2-9）或邀请链接发给朋友，邀请链接会自动打开联机面板并预填房间码。房间最多 8 人，不填充机器人，房主离开即关闭房间。
+
+房主持有唯一的对局权威：地图、时钟、血量、弹药、命中、近战、道具、复活和计分都由房主判定并同步，客机只预测自己的移动与视角，位置偏差过大时会被拉回。房主浏览器必须保持开启，建议把标签页留在前台，后台标签页可能被浏览器限速或休眠。
+
+暂停菜单只暂停自己的输入，联机对局继续；房主可在结算后再开一局，其他玩家等待房主；返回大厅即离开房间。联机对局不发放本地武器经验。
+
+默认使用 [PeerJS 公共信令](https://peerjs.com/client/getting-started) 建立 WebRTC DataChannel，连接建立后对局数据在玩家与房主之间直接传输，不需要额外服务端保存房间状态。公司网络、运营商 NAT 或防火墙可能需要 TURN 中继，可用 `VITE_PEER_*` 与 `VITE_ICE_SERVERS` 指定自建信令或中继，完整流程见 [联机与补给指南](docs/ONLINE.md)。
+
+## 随机补给
+
+每张地图固定刷 5 份弹夹和 5 个血包，点位取自导航图连通、人物能站立且不卡墙的位置，并尽量彼此分开。
+
+| 道具 | 效果 | 刷新 |
+| --- | --- | --- |
+| 血包 | 回复最多 35 HP，上限 100 HP | 20 秒后换新位置 |
+| 弹夹 | 主武器与手枪各补一个弹匣容量的备弹，不超过各自备弹上限，不会直接填入当前弹匣 | 15 秒后换新位置 |
+
+走近自动拾取，不需要按键，隔着墙不能拾取；满血或所有备弹都已满时不会消耗对应道具。单机机器人也会拾取，联机由房主决定唯一的拾取者并同步给所有玩家。
 
 ## 工程结构
 
@@ -138,13 +164,16 @@ Free For All：1 位玩家 + 7 个 Bot，5 分钟，击杀 +1 分，3 秒后安�
 | `src/bots` | 七种 AI 状态、A* 路径、地面及高架导航图 |
 | `src/world` | `MapKit` 地形工具、十张地图定义、AABB 碰撞与安全出生点 |
 | `src/game` | 命中分区、FFA 规则、计时和排名（`GameMode` 接口可扩展其他模式） |
+| `src/network` | 房间信令、房主权威的对局同步与客机移动预测 |
+| `src/world/PickupManager.ts` | 随机补给点位、拾取判定与刷新 |
 | `src/core/Progress.ts` | 武器等级、经验曲线与涂装解锁 |
+| `src/core/I18n.ts` | 中英文字符串表与语言切换 |
 | `src/ui` | 主菜单、配装、设置、HUD、暂停、记分板与结算 |
-| `src/effects` / `src/audio` | 有上限的实例化粒子池和 Web Audio 合成 |
+| `src/effects` / `src/audio` | 有上限的实例化粒子池，以及合成的枪声、脚步与切刀音效 |
 
 ## 开发与验证
 
-`npm test` 在本地开发服务器运行时执行浏览器验收（`world` + `smoke` + `melee` + `maps` + `progress`）。默认使用 Windows 安装的 Chrome，可通过 `CHROME_PATH` 指定浏览器路径。测试使用软件 WebGL，性能结果不代表真实 GPU 帧率。结果和截图写入 `test-results/`，其中 `map-*.png` 是十张地图的实机截图。
+`npm test` 在本地开发服务器运行时执行浏览器验收（`world` + `smoke` + `melee` + `maps` + `progress`）。另有四个单独运行的脚本：`npm run test:pickups` 校验十张地图的补给点位与拾取规则，`npm run test:audio` 在 `OfflineAudioContext` 中检查合成枪声，`npm run test:capture` 覆盖鼠标锁定兼容模式，`npm run test:online` 会自行拉起本地信令服务器与独立 Vite（5174 / 9001 端口），用两个真实浏览器上下文通过 WebRTC 跑完整联机流程，不依赖公网信令。默认使用 Windows 安装的 Chrome，可通过 `CHROME_PATH` 指定浏览器路径。测试固定以英文界面运行（Playwright locale 固定为 `en-US`），因为部分断言直接匹配英文 HUD 文案。测试使用软件 WebGL，性能结果不代表真实 GPU 帧率。结果和截图写入 `test-results/`，其中 `map-*.png` 是十张地图的实机截图。
 
 <details>
 <summary><b>验收脚本具体检查什么</b></summary>
@@ -172,13 +201,15 @@ Free For All：1 位玩家 + 7 个 Bot，5 分钟，击杀 +1 分，3 秒后安�
 
 ## 已知限制
 
-当前版本是离线单人 Bot 对战，不包含联机服务。小地图、其他模式和移动端触控尚未实现。Graphics Low 关闭阴影并限制像素比；实际帧率取决于设备与浏览器，未对低配置硬件作 60 FPS 保证。
+联机是好友房间模式：没有专用服务器、账号匹配、房主迁移或竞技反作弊，房主浏览器必须保持开启，公共信令不可达的网络需要自备 TURN 中继，联机对局也不结算本地武器经验。小地图、其他模式和移动端触控尚未实现。Graphics Low 关闭阴影并限制像素比；实际帧率取决于设备与浏览器，未对低配置硬件作 60 FPS 保证。
 
 ## 部署
 
 项目是纯静态站点，构建产物在 `dist/`，可以托管到任意静态服务。
 
 **Vercel**：在 [vercel.com/new](https://vercel.com/new) 导入本仓库即可，无需任何配置——Vercel 会自动识别 Vite，构建命令 `npm run build`，输出目录 `dist`。之后每次推送到 `main` 都会自动重新部署。
+
+需要在 Vercel 上更换信令或加 TURN 时，在 Project → Settings → Environment Variables 配置 `VITE_PEER_HOST`、`VITE_PEER_PORT`、`VITE_PEER_PATH`、`VITE_PEER_SECURE` 与 `VITE_ICE_SERVERS`，改完重新部署。这些变量会打包进公开的浏览器代码，不要放服务管理密钥。
 
 **其他平台**：`npm run build` 后把 `dist/` 整个目录传上去即可，不需要 Node 运行时。
 

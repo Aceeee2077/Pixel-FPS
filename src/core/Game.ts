@@ -1,4 +1,7 @@
 import * as THREE from 'three';
+import { PickupManager } from '../world/PickupManager';
+import { drawPose } from '../weapons/DrawAnimation';
+import { NetworkGame } from '../network/NetworkGame';
 import { ArenaMap } from '../world/Map';
 import { MAPS, RANDOM_MAP_ID, mapById } from '../world/Maps';
 import { Player } from '../player/Player';
@@ -8,6 +11,7 @@ import { WEAPONS, PRIMARY, WeaponId, MeleeKind } from '../weapons/WeaponConfig';
 import { WeaponManager } from '../weapons/WeaponManager';
 import { weaponModel } from '../weapons/WeaponModel';
 import { appearanceKey, weaponTitle } from '../weapons/WeaponAppearance';
+import { t } from './I18n';
 import { Bot, Actor } from '../bots/Bot';
 import { trace } from '../game/Combat';
 import { SpawnManager } from '../world/SpawnManager';
@@ -63,6 +67,8 @@ export class Game {
     flashLeft = 0;
     stepAt = 0;
     lastSlot = 0;
+    pickups = new PickupManager(this.scene);
+    network!: NetworkGame;
     private captureSequence = 0;
     constructor() {
         const canvas = document.querySelector<HTMLCanvasElement>('#game')!;
@@ -110,9 +116,12 @@ export class Game {
         this.view.add(this.flash);
         this.flash.position.set(0, .03, -.86);
         this.flash.visible = false;
+        this.network = new NetworkGame(this);
         this.ui = new UI(this);
         this.applySettings();
         this.mainMenu();
+        const invited = new URLSearchParams(location.search).get('room');
+        if (invited) this.ui.multiplayer(invited);
         this.input.onCaptureLost = () => {
             if (this.running || this.input.mode === 'requesting') this.pause();
         };
@@ -135,7 +144,7 @@ export class Game {
             this.view.visible = false;
         } this.renderer.render(this.scene, this.camera); this.ui.renderPreview(dt); this.input.endFrame(); });
     }
-    get actors(): Actor[] { return [this.player, ...this.bots]; }
+    get actors(): Actor[] { return this.network?.active ? this.network.actors : [this.player, ...this.bots]; }
     get weapon() { return this.weapons.current; }
     /** Sky, fog and light colours belong to the map, so each arena reads differently. */
     private applyPalette() {
@@ -156,6 +165,7 @@ export class Game {
         const definition = mapById(id);
         if (this.map.definition.id === definition.id)
             return;
+        this.pickups.clear();
         this.map.dispose();
         this.map = new ArenaMap(this.scene, definition);
         this.applyPalette();
@@ -177,14 +187,19 @@ export class Game {
         materials.forEach(m => m.needsUpdate = true);
     } }); }
     faceCenter() { this.player.yaw = Math.atan2(this.player.position.x, this.player.position.z); this.player.pitch = 0; this.player.recoil = 0; this.player.update(.001, this.input, this.map); }
-    start() {
+    start(online = false, mapId?: string) {
+        if (!online) this.network.leave();
+        if (this.network.host) this.network.newRound();
         this.running = false;
         this.input.suspend();
+        this.audio.stopAll();
         this.audio.unlock();
         this.effects.clear();
         this.time = 0;
         this.stepAt = 0;
+        this.loadMap(mapId ?? (this.settings.data.map === RANDOM_MAP_ID ? MAPS[Math.floor(Math.random() * MAPS.length)].id : this.settings.data.map));
         this.match.reset(this.actors);
+        this.match.localId = this.player.id;
         for (const actor of this.actors) actor.alive = false;
         for (const actor of this.actors) this.spawns.respawn(actor, this.actors, this.time);
         // Locked cosmetics fall back to the default before the loadout is applied.
@@ -195,13 +210,14 @@ export class Game {
         this.settings.save();
         this.weaponKills = {};
         this.lastXp = [];
-        this.loadMap(this.settings.data.map === RANDOM_MAP_ID ? MAPS[Math.floor(Math.random() * MAPS.length)].id : this.settings.data.map);
+        if (!this.network.guest) this.pickups.reset(this.map, this.nav);
+        this.bots.forEach(b => b.group.visible = !online);
         this.weapons.primary = this.settings.data.primary as WeaponId;
         this.weapons.appearance = { knifeStyle: this.settings.data.knifeStyle, rifleSkin: this.settings.data.rifleSkin };
         this.inspect = 0;
         this.weapons.reset();
         this.lastSlot = 0;
-        this.ais.forEach(ai => { ai.reset(); ai.bot.weapon = new Weapon(ai.bot.weapon.config); ai.bot.sync(0); });
+        this.ais.forEach(ai => { ai.reset(); ai.bot.weapon = new Weapon(ai.bot.weapon.config); ai.bot.sync(0); ai.bot.group.visible = !online; });
         this.faceCenter();
         this.ui.hitUntil = 0;
         this.ui.eliminationUntil = 0;
@@ -222,6 +238,7 @@ export class Game {
         this.ui.update();
     }
     pause() {
+        this.audio.cancelWeapon();
         ++this.captureSequence;
         this.running = false;
         this.input.suspend();
@@ -229,6 +246,8 @@ export class Game {
     }
     resume() { void this.captureAndPlay(); }
     mainMenu() {
+        this.audio.stopAll();
+        this.network?.leave();
         ++this.captureSequence;
         this.running = false;
         this.input.suspend();
@@ -236,34 +255,35 @@ export class Game {
         this.ui.menuLoadout();
         this.view.visible = false;
     }
-    damage(victim: Actor, amount: number, source: Actor, head = false) { if (!victim.alive || victim.protectedUntil > this.time)
-        return; victim.hp = Math.max(0, victim.hp - amount); if (victim.id === 0)
+    damage(victim: Actor, amount: number, source: Actor, head = false) { if (this.network.guest || !victim.alive || victim.protectedUntil > this.time)
+        return; victim.hp = Math.max(0, victim.hp - amount); if (victim.id === this.player.id)
         this.ui.damageUntil = this.time + .25; if (victim.hp === 0) {
         victim.alive = false;
         this.effects.death(victim.position, victim.color);
         // Knife kills credit the actual blade in the feed, every other kill uses the weapon class.
-        const weapon = source instanceof Bot ? source.weapon.config.name : this.weapon.config.melee ? weaponTitle('knife', this.weapons.appearance).split(' / ')[0] : this.weapon.config.name;
+        const weapon = source instanceof Bot ? (this.network.loadout(source)?.current.config.name ?? source.weapon.config.name) : this.weapon.config.melee ? weaponTitle('knife', this.weapons.appearance).split(' / ')[0] : this.weapon.config.name;
         this.match.kill(source, victim, weapon, this.time, head);
-        if (source.id === 0)
+        if (source.id === this.player.id)
             this.weaponKills[this.weapon.config.id] = (this.weaponKills[this.weapon.config.id] ?? 0) + 1;
         victim.respawnAt = this.time + 3;
-        if (source.id === 0) {
+        if (source.id === this.player.id) {
             this.ui.eliminated(victim.name, source.streak);
             this.audio.kill();
         }
-        if (victim.id === 0) {
+        if (victim.id === this.player.id) {
+            this.audio.cancelWeapon();
             this.input.firing = false;
             this.input.aiming = false;
-            this.ui.el('killer-label').textContent = `${source.name} got the last shot.`;
+            this.ui.el('killer-label').textContent = t('hud.deathKiller', { name: source.name });
         }
     } }
     /** Turns the finished match into weapon XP; the results screen renders what came back. */
     private awardMatchXp() {
-        const won = this.match.rank(this.actors)[0]?.id === 0;
+        const won = this.match.rank(this.actors)[0]?.id === this.player.id;
         return matchXp(this.weapons.primary, this.weaponKills, won).map(row => this.progress.award(row.weapon, row.xp));
     }
     shootBot(bot: Bot, origin: THREE.Vector3, dir: THREE.Vector3) { if (!bot.weapon.shoot())
-        return; const cfg = bot.weapon.config; this.audio.gun(cfg.id, origin.distanceTo(this.player.position), Math.sin(Math.atan2(origin.x - this.player.position.x, origin.z - this.player.position.z) - this.player.yaw)); this.effects.emit(origin.clone().addScaledVector(dir, .8), 0xffd878, 2, 1, .07); for (let i = 0; i < cfg.pelletCount; i++) {
+        return; const cfg = bot.weapon.config; this.audio.gunAt(cfg.id, origin, this.player.position, this.player.yaw); this.effects.emit(origin.clone().addScaledVector(dir, .8), 0xffd878, 2, 1, .07); for (let i = 0; i < cfg.pelletCount; i++) {
         const direction = dir.clone();
         if (cfg.pelletCount > 1)
             direction.add(new THREE.Vector3((Math.random() - .5) * cfg.spread, (Math.random() - .5) * cfg.spread, (Math.random() - .5) * cfg.spread)).normalize();
@@ -284,12 +304,17 @@ export class Game {
         this.inspect = 0;
         this.player.protectedUntil = 0;
         const base = this.camera.getWorldDirection(new THREE.Vector3());
+        if (this.network.guest) {
+            this.network.command('fire'); this.audio.gun(cfg.id); this.flashLeft = .05;
+            this.player.recoil += cfg.recoil; return;
+        }
         const spread = (this.input.aiming ? (cfg.id === 'sniper' ? .0003 : cfg.spread * .3) : cfg.spread) + (this.player.speed > 1 ? cfg.movementSpread : 0) + (!this.player.grounded ? cfg.jumpSpread : 0) + this.weapon.heat * .0007;
         this.audio.gun(cfg.id);
         this.flashLeft = .05;
         for (let i = 0; i < cfg.pelletCount; i++) {
             const dir = base.clone().add(new THREE.Vector3((Math.random() - .5) * spread, (Math.random() - .5) * spread, (Math.random() - .5) * spread)).normalize();
             const hit = trace(this.camera.position, dir, cfg.range, this.player, this.actors, this.map);
+            if (this.network.host && i === 0) this.network.room.send({ type: 'shot', shooter: this.player.id, weapon: cfg.id, from: this.camera.position.toArray(), to: hit.point.toArray() });
             if (hit.actor && hit.actor.protectedUntil <= this.time) {
                 const falloff = cfg.id === 'shotgun' ? Math.max(.12, 1 - hit.distance / 42) : 1;
                 const damage = cfg.damage * hit.multiplier * falloff;
@@ -325,10 +350,12 @@ export class Game {
         this.kick = kind === 'heavy' ? .05 : .024;
         this.player.protectedUntil = 0;
         this.audio.melee(kind);
+        this.network.command(kind);
         return true;
     }
     /** Melee damage lands on the strike frame of the swing, so a stab can be out-run or traded. */
     resolveMelee() {
+        if (this.network.guest) return;
         const weapon = this.weapon, profile = weapon.config.melee, kind = weapon.attack;
         if (!profile || !kind || weapon.landed || !this.player.alive)
             return;
@@ -350,7 +377,7 @@ export class Game {
         this.player.recoil += kind === 'heavy' ? .022 : .01;
     }
     /** Same rule as CS2: a stab counts as a backstab when it lands while the victim faces away. */
-    private isBackstab(victim: Actor, direction: THREE.Vector3) {
+    isBackstab(victim: Actor, direction: THREE.Vector3) {
         const flat = direction.clone().setY(0);
         if (flat.lengthSq() < 1e-6)
             return false;
@@ -358,7 +385,8 @@ export class Game {
         return forward.dot(flat.normalize()) > .35;
     }
     updateView(dt: number) {
-        const cfg = this.weapon.config;
+        const displayed = this.weapons.displayed;
+        const cfg = displayed.config;
         if (this.view.userData.appearance !== appearanceKey(cfg.id, this.weapons.appearance)) {
             this.camera.remove(this.view);
             this.view = weaponModel(cfg.id, true, this.weapons.appearance);
@@ -372,7 +400,7 @@ export class Game {
         this.flash.visible = this.flashLeft > 0;
         this.flash.rotation.z = Math.random() * Math.PI;
         const knife = cfg.id === 'knife';
-        const reload = this.weapon.reloadLeft > 0 ? Math.sin(this.weapon.reloadLeft / cfg.reloadTime * Math.PI) : 0;
+        const reload = displayed.reloadLeft > 0 ? Math.sin(displayed.reloadLeft / cfg.reloadTime * Math.PI) : 0;
         this.kick *= Math.exp(-18 * dt);
         const aim = this.input.aiming && !knife;
         if (aim || reload > 0 || this.weapons.switchLeft > 0) this.inspect = 0;
@@ -383,15 +411,15 @@ export class Game {
         pos.z += this.kick - reload * .22;
         rot.x -= reload * .5;
         rot.z -= reload * .45;
-        // Deployment: the weapon rises from below the frame; knives flip open on the way up.
-        const raised = easeOut(this.drawProgress());
-        pos.y -= (1 - raised) * (knife ? .5 : .42);
-        pos.x += (1 - raised) * (knife ? .1 : .03);
-        rot.x -= (1 - raised) * (knife ? .5 : .38);
-        rot.y += (1 - raised) * (knife ? .5 : .12);
-        if (knife) {
-            rot.z -= (1 - raised) * 1.3;
-            rot.z += (1 - raised) * this.knifeFlourish();
+        // Lower the old weapon before revealing the new grip; never spin the entire arm.
+        if (this.weapons.holstering) {
+            const t = (this.weapons.switchTotal - this.weapons.switchLeft) / this.weapons.holsterTime;
+            const s = t * t * (3 - 2 * t);
+            pos.y -= s * .55; pos.z += s * .12; rot.x -= s * .35;
+        } else {
+            const pose = drawPose(this.drawProgress(), knife);
+            pos.add(new THREE.Vector3(pose[0], pose[1], pose[2]));
+            rot.add(new THREE.Vector3(pose[3], pose[4], pose[5]));
         }
         // Swing: wind up, cut through the strike frame, then settle back into the idle pose.
         const swing = this.swingPose();
@@ -406,9 +434,9 @@ export class Game {
         this.camera.updateProjectionMatrix();
     }
     /** 0..1 progress of the running weapon switch; 1 when nothing is being drawn. */
-    private drawProgress() { return this.weapons.switchTotal > 0 ? THREE.MathUtils.clamp(1 - this.weapons.switchLeft / this.weapons.switchTotal, 0, 1) : 1; }
-    /** Flick knives spin all the way open, fixed blades just snap up. */
-    private knifeFlourish() { const style = this.weapons.appearance.knifeStyle; return style === 'classic' || style === 'm9-ruby' ? .95 : Math.PI * 2; }
+    private drawProgress() { return this.weapons.switchTotal > 0 ? THREE.MathUtils.clamp(1 - this.weapons.switchLeft / (this.weapons.switchTotal - this.weapons.holsterTime), 0, 1) : 1; }
+    /** Folding blades use their own opening sound; wrist motion stays within a natural range. */
+    private foldingKnife() { return this.weapons.appearance.knifeStyle.startsWith('butterfly'); }
     /** Per-frame offsets for the running stab, or null when the blade is idle. */
     private swingPose() {
         const kind = this.weapon.attack, profile = this.weapon.config.melee;
@@ -426,15 +454,19 @@ export class Game {
         return [0, 1, 2, 3, 4, 5].map(i => rig.wind[i] * lean + rig.cut[i] * blow);
     }
     tick(dt: number) {
-        if (!this.running)
+        if (!this.running && !this.network.active)
             return;
+        if (this.match.ended && this.ui.screen === 'results') return;
+        const controls = this.running;
+        if (!controls) this.input.clear();
         this.time += dt;
-        this.match.update(dt);
+        if (!this.network.guest) this.match.update(dt);
         if (this.match.ended) {
             this.running = false;
             ++this.captureSequence;
             this.input.suspend();
-            this.lastXp = this.awardMatchXp();
+            this.audio.cancelWeapon();
+            this.lastXp = this.network.active ? [] : this.awardMatchXp();
             this.ui.show('results');
             return;
         }
@@ -448,25 +480,29 @@ export class Game {
         if (this.input.pressed.has('KeyF') && this.player.alive) this.inspect = this.inspect > 0 ? 0 : 2.5;
         for (let i = 0; i < 3; i++)
             if (this.input.pressed.has(`Digit${i + 1}`))
-                this.weapons.select(i);
+                if (this.weapons.select(i)) this.network.command('switch', i);
         if (this.input.wheel)
-            this.weapons.select((this.weapons.slot + Math.sign(this.input.wheel) + 3) % 3);
+            if (this.weapons.select((this.weapons.slot + Math.sign(this.input.wheel) + 3) % 3)) this.network.command('switch', this.weapons.slot);
         if (this.weapons.slot !== this.lastSlot) {
             this.lastSlot = this.weapons.slot;
             if (this.weapon.config.id === 'knife')
-                this.audio.drawBlade(this.knifeFlourish() > 1);
+                this.audio.drawBlade(this.foldingKnife());
+            else this.audio.drawWeapon(this.weapon.config.id);
         }
         this.handleWeaponInput();
         this.resolveMelee();
-        if (this.player.alive && this.input.pressed.has('KeyR') && this.weapon.reload())
-            this.audio.reload();
+        if (this.player.alive && !this.weapons.switching && this.input.pressed.has('KeyR') && this.weapon.reload()) {
+            this.audio.reload(this.weapon); this.network.command('reload');
+        }
+        this.audio.updateWeapon(this.weapon, this.player.alive);
         this.updateView(dt);
-        for (const a of this.actors) {
+        for (const a of this.network.guest ? [] : this.actors) {
             if (!a.alive && this.time >= a.respawnAt) {
                 this.spawns.respawn(a, this.actors, this.time);
                 if (a instanceof Bot) {
                     a.weapon = new Weapon(a.weapon.config);
-                    this.ais[a.id - 1].reset();
+                    if (this.network.host) this.network.loadout(a)?.reset();
+                    else this.ais[a.id - 1].reset();
                 }
                 else {
                     this.weapons.reset();
@@ -474,9 +510,15 @@ export class Game {
                 }
             }
         }
-        for (const ai of this.ais)
+        for (const ai of this.network.active ? [] : this.ais)
             ai.update(dt, this.time, this.actors, (b, o, d) => this.shootBot(b, o, d), this.settings.data.difficulty);
-        this.bots.forEach(b => b.sync(this.time));
+        if (!this.network.active) this.bots.forEach(b => b.sync(this.time));
+        this.network.update(dt);
+        if (this.network.guest) this.pickups.animate(this.time);
+        else this.pickups.update(this.time, this.actors, a => this.network.loadout(a)?.slots ?? (a instanceof Bot ? [a.weapon] : this.weapons.slots), (a, kind, amount) => {
+            if (a === this.player) { this.ui.notice(t('pickup.' + kind, { n: amount })); this.audio.ui(); }
+            else this.network.pickup(a, kind, amount);
+        });
         this.ui.update();
         this.effects.update(dt);
         if (this.player.alive && this.player.grounded && this.player.speed > 2 && this.time > this.stepAt) {
