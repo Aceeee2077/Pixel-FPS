@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.browser/
+test-results/
+.vercel/
+*.log
