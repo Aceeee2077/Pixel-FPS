@@ -3,6 +3,7 @@ import { PickupManager } from '../world/PickupManager';
 import { drawPose } from '../weapons/DrawAnimation';
 import { NetworkGame } from '../network/NetworkGame';
 import { ArenaMap } from '../world/Map';
+import { Environment } from '../world/Environment';
 import { MAPS, RANDOM_MAP_ID, mapById } from '../world/Maps';
 import { Player } from '../player/Player';
 import { InputManager } from './InputManager';
@@ -37,6 +38,7 @@ export class Game {
     camera = new THREE.PerspectiveCamera(90, innerWidth / innerHeight, .05, 400);
     renderer: THREE.WebGLRenderer;
     map: ArenaMap;
+    environment!: Environment;
     player: Player;
     input: InputManager;
     running = false;
@@ -95,6 +97,8 @@ export class Game {
         this.sun.shadow.normalBias = .08;
         this.scene.add(this.sun);
         this.map = new ArenaMap(this.scene, mapById(this.settings.data.map));
+        this.environment = new Environment(this.scene);
+        this.environment.load(this.map.definition.id).then(() => { this.map.group.visible = !this.environment.ready; });
         this.applyPalette();
         this.player = new Player(this.camera);
         this.input = new InputManager(canvas);
@@ -168,6 +172,7 @@ export class Game {
         this.pickups.clear();
         this.map.dispose();
         this.map = new ArenaMap(this.scene, definition);
+        this.environment.load(definition.id).then(() => { this.map.group.visible = !this.environment.ready; });
         this.applyPalette();
         this.spawns = new SpawnManager(this.map);
         this.nav = new BotNavigation(this.map);
