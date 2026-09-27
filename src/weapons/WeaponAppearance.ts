@@ -1,21 +1,24 @@
 import type { WeaponId } from './WeaponConfig';
 import { getWeapon } from '../data/weapons';
+import { localReferenceImage } from '../data/localReferenceImages';
 import { skinById, type WeaponSkin } from './WeaponSkins';
 
+const art = (name: string, weaponId: string) => localReferenceImage(name) ?? `/assets/weapons/${weaponId}/preview.webp`;
+
 export const KNIVES = [
-    { id: 'classic', name: 'Combat Knife', finish: 'IVORY / FIELD', label: '战术匕首', color: '#dce3cf', image: new URL('../../Knife.png', import.meta.url).href },
-    { id: 'butterfly-emerald', name: 'Butterfly', finish: 'EMERALD', label: '蝴蝶刀 · 绿宝石', color: '#39e791', image: new URL('../../Butterfly_Knife_Emerald.png', import.meta.url).href },
-    { id: 'butterfly-fade', name: 'Butterfly', finish: 'FADE', label: '蝴蝶刀 · 渐变之色', color: '#ed81c4', image: new URL('../../Butterfly_Knife_Fade.png', import.meta.url).href },
-    { id: 'karambit-emerald', name: 'Karambit', finish: 'EMERALD', label: '爪子刀 · 绿宝石', color: '#39e791', image: new URL('../../Karambit_Emerald.png', import.meta.url).href },
-    { id: 'm9-ruby', name: 'M9 Bayonet', finish: 'RUBY', label: 'M9 刺刀 · 红宝石', color: '#f95770', image: new URL('../../M9Bayonet_Ruby.png', import.meta.url).href },
+    { id: 'classic', name: 'Combat Knife', finish: 'IVORY / FIELD', label: '战术匕首', color: '#dce3cf', image: art('Knife.png', 'knife') },
+    { id: 'butterfly-emerald', name: 'Butterfly', finish: 'EMERALD', label: '蝴蝶刀 · 绿宝石', color: '#39e791', image: art('Butterfly_Knife_Emerald.png', 'butterfly') },
+    { id: 'butterfly-fade', name: 'Butterfly', finish: 'FADE', label: '蝴蝶刀 · 渐变之色', color: '#ed81c4', image: art('Butterfly_Knife_Fade.png', 'butterfly') },
+    { id: 'karambit-emerald', name: 'Karambit', finish: 'EMERALD', label: '爪子刀 · 绿宝石', color: '#39e791', image: art('Karambit_Emerald.png', 'karambit') },
+    { id: 'm9-ruby', name: 'M9 Bayonet', finish: 'RUBY', label: 'M9 刺刀 · 红宝石', color: '#f95770', image: art('M9Bayonet_Ruby.png', 'm9') },
 ] as const;
 export const RIFLE_SKINS = [
-    { id: 'standard', name: 'FIELD / 原版', image: new URL('../../M4A4.png', import.meta.url).href },
-    { id: 'asimov', name: 'ASIMOV / 白橙', image: new URL('../../M4A4_Asimov.png', import.meta.url).href },
+    { id: 'standard', name: 'FIELD / 原版', image: art('M4A4.png', 'm4a4') },
+    { id: 'asimov', name: 'ASIMOV / 白橙', image: art('M4A4_Asimov.png', 'm4a4') },
 ] as const;
 export const PISTOL_SKINS = [
-    { id: 'default', name: 'SERVICE / 原版', image: new URL('../../Glock.png', import.meta.url).href },
-    { id: 'copper', name: 'COPPER / 铜色', image: new URL('../../Glock.png', import.meta.url).href },
+    { id: 'default', name: 'SERVICE / 原版', image: art('Glock.png', 'glock') },
+    { id: 'copper', name: 'COPPER / 铜色', image: art('Glock.png', 'glock') },
 ] as const;
 export type PistolSkin = typeof PISTOL_SKINS[number]['id'];
 export type KnifeStyle = typeof KNIVES[number]['id'];
@@ -58,9 +61,9 @@ export function weaponImage(id: WeaponId, appearance: WeaponAppearance) {
     if (id === 'rifle' || id === 'm4a4') return RIFLE_SKINS.find(s => s.id === appearance.rifleSkin)!.image;
     const definition = getWeapon(id);
     if (definition && id !== 'rifle' && id !== 'smg' && id !== 'sniper' && id !== 'pistol' && id !== 'shotgun') return definition.previewImage ?? '';
-    if (id === 'smg') return new URL('../../UMP-45.png', import.meta.url).href;
-    if (id === 'sniper') return new URL('../../AWP.png', import.meta.url).href;
-    if (id === 'pistol') return new URL('../../Glock.png', import.meta.url).href;
+    if (id === 'smg') return getWeapon('ump-45')?.previewImage ?? '';
+    if (id === 'sniper') return getWeapon('awp')?.previewImage ?? '';
+    if (id === 'pistol') return getWeapon('glock')?.previewImage ?? '';
     return '';
 }
 export function weaponTitle(id: WeaponId, appearance: WeaponAppearance) {

@@ -1,5 +1,6 @@
 import type { WeaponConfig } from '../weapons/WeaponConfig';
 import { weaponAsset } from './weaponAssets';
+import { localReferenceImage } from './localReferenceImages';
 
 export type WeaponCategory = 'pistols' | 'smgs' | 'rifles' | 'snipers' | 'shotguns' | 'machine-guns' | 'melee';
 export type WeaponSide = 'attackers' | 'defenders' | 'both';
@@ -82,33 +83,6 @@ const rows: readonly Row[] = [
     ['karambit','Karambit','melee','both',0,'Karambit_Emerald.png',45,1,150],
     ['m9','M9 Bayonet','melee','both',0,'M9Bayonet_Ruby.png',45,1,150],
 ];
-// Vite needs literal asset URLs to include the supplied PNGs in production builds.
-const images: Record<string, string> = {
-    'Glock.png': new URL('../../Glock.png', import.meta.url).href,
-    'usp.png': new URL('../../usp.png', import.meta.url).href,
-    'P2000.png': new URL('../../P2000.png', import.meta.url).href,
-    'P250.png': new URL('../../P250.png', import.meta.url).href,
-    'FN57.png': new URL('../../FN57.png', import.meta.url).href,
-    'TEC-9.png': new URL('../../TEC-9.png', import.meta.url).href,
-    'CZ75.png': new URL('../../CZ75.png', import.meta.url).href,
-    'Deagle.png': new URL('../../Deagle.png', import.meta.url).href,
-    'MP9.png': new URL('../../MP9.png', import.meta.url).href,
-    'MAC-10.png': new URL('../../MAC-10.png', import.meta.url).href,
-    'MP7.png': new URL('../../MP7.png', import.meta.url).href,
-    'UMP-45.png': new URL('../../UMP-45.png', import.meta.url).href,
-    'PP19.png': new URL('../../PP19.png', import.meta.url).href,
-    'P90.png': new URL('../../P90.png', import.meta.url).href,
-    'AK-47.png': new URL('../../AK-47.png', import.meta.url).href,
-    'M4A4.png': new URL('../../M4A4.png', import.meta.url).href,
-    'M4A1-S.png': new URL('../../M4A1-S.png', import.meta.url).href,
-    'FAMAS.png': new URL('../../FAMAS.png', import.meta.url).href,
-    'AUG.png': new URL('../../AUG.png', import.meta.url).href,
-    'AWP.png': new URL('../../AWP.png', import.meta.url).href,
-    'Knife.png': new URL('../../Knife.png', import.meta.url).href,
-    'Butterfly_Knife_Emerald.png': new URL('../../Butterfly_Knife_Emerald.png', import.meta.url).href,
-    'Karambit_Emerald.png': new URL('../../Karambit_Emerald.png', import.meta.url).href,
-    'M9Bayonet_Ruby.png': new URL('../../M9Bayonet_Ruby.png', import.meta.url).href,
-};
 /** Punctuation-insensitive id lookup for imported assets and display names. */
 export function normalizeWeaponId(value: string): string {
     return value.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -162,7 +136,7 @@ function create(row: Row): WeaponDefinition {
         } : undefined,
     };
     const authored = assetsFor(id, category);
-    const referenceImage = image ? images[image] ?? null : null;
+    const referenceImage = image ? localReferenceImage(image) : null;
     const thumbnail = weaponAsset(id)?.thumbnail ?? null;
     const previewImage = referenceImage ?? thumbnail;
     return {

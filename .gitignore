@@ -4,3 +4,15 @@ dist/
 test-results/
 .vercel/
 *.log
+
+# Local reference artwork at the repository root. Published previews live in
+# public/assets/weapons and remain tracked for builds without these originals.
+/*.png
+/*.jpg
+/*.jpeg
+/*.webp
+
+# Blender working renders, masks and silhouettes are reproducible local output.
+/tools/blender/previews/
+/tools/blender/reference_work/
+/tools/blender/silhouettes/
