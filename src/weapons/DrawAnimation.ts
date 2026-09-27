@@ -1,8 +1,8 @@
 /** Keyframed wrist motion; the hand never performs a full revolution. */
 export function drawPose(progress: number, knife: boolean): number[] {
     const frames = knife ? [
-        [0, .12, -.55, .16, -.65, .4, -.65],
-        [.48, .04, -.12, .07, -.24, .25, -.38],
+        [0, .12, -.22, .16, -.16, .4, -.35],
+        [.48, .04, -.07, .07, -.05, .25, -.2],
         [.78, -.02, .025, -.015, .05, -.06, .08],
         [1, 0, 0, 0, 0, 0, 0],
     ] : [[0, .03, -.42, .08, -.38, .12, -.1], [1, 0, 0, 0, 0, 0, 0]];

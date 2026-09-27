@@ -29,8 +29,8 @@ bpy 导出结果未在本机执行，脚本按与 `Maps.ts` 相同的坐标书�
 
 ## 当前状态
 
-- 已完成：BLOCKYARD 从建模管线到浏览器加载的完整闭环，生产构建通过，地图碰撞/导航验收通过。
-- 待完成：其余 9 张地图（DUNE RIDGE、HARBORLINE、SUBWAY DEPOT、VERTICAL CITY、GLACIER OUTPOST、
+- 已完成：BLOCKYARD 与 DUNE RIDGE 从建模管线到浏览器加载的完整闭环，生产构建通过，十张地图碰撞/导航验收通过。
+- 待完成：其余 8 张地图（HARBORLINE、SUBWAY DEPOT、VERTICAL CITY、GLACIER OUTPOST、
   ARENA PIT、FACTORY FLOOR、JUNGLE TEMPLE、OFFSHORE RIG）沿用同一管线逐张生成 GLB 并接入。
 
 ## 验证

@@ -1,0 +1,65 @@
+{
+  "record": {
+    "model": "/assets/weapons/scar20/scar20.glb",
+    "preview": "/assets/weapons/scar20/preview.webp",
+    "status": "refining",
+    "category": "sniper",
+    "has_reference": true,
+    "triangles": 6748,
+    "materials": 7,
+    "parts": 21,
+    "validation": {
+      "ok": true,
+      "failures": [],
+      "warnings": [
+        "sparse detail: 6748 tris < 14000 class floor",
+        "BoltCam has no UV layer",
+        "BoltCarrierBody has no UV layer",
+        "ChargingHandleLatch has no UV layer",
+        "ChargingHandlePaddle has no UV layer",
+        "ButtPad has no UV layer",
+        "EjectionPort has no UV layer",
+        "MagazineBody has no UV layer"
+      ]
+    },
+    "blend": "assets-source/blender/scar20.blend"
+  },
+  "stats": {
+    "triangles": 6748,
+    "vertices": 3209,
+    "mesh_objects": 21,
+    "empty_nodes": 10,
+    "materials": [
+      "M_BlackAnodized",
+      "M_BrushedSteel",
+      "M_Gunmetal",
+      "M_PhosphateSteel",
+      "M_PolymerFDE",
+      "M_Rubber",
+      "M_ScopeGlass"
+    ],
+    "parts": {
+      "Barrel_Batched": 922,
+      "BoltCam": 22,
+      "BoltCarrierBody": 40,
+      "ChargingHandleLatch": 72,
+      "ChargingHandlePaddle": 72,
+      "ButtPad": 40,
+      "CheekRiser_Batched": 3326,
+      "CheekScrew0_Batched": 292,
+      "EjectionPort": 72,
+      "FrontSightBase_Batched": 1272,
+      "MagazineBody": 64,
+      "MagazineCatch": 40,
+      "MagazineFloor": 72,
+      "MagazineSpine": 72,
+      "MagazineWell": 70,
+      "ScopeObjectiveGlass_Batched": 52,
+      "StockHinge": 40,
+      "BoltRelease": 40,
+      "MagRelease": 40,
+      "TriggerAssemblyBlade": 70,
+      "TriggerAssemblyGuard": 58
+    }
+  }
+}

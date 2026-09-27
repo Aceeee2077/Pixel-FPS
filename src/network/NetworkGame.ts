@@ -8,6 +8,7 @@ import { t } from '../core/I18n';
 import { Room, PROTOCOL, cleanName } from './Room';
 import type { PickupState } from '../world/PickupManager';
 import type { KillEvent } from '../game/MatchManager';
+import { XP_PER_KILL } from '../core/Progress';
 
 type ActorState = { id: number; name: string; color: number; position: number[]; velocity: number[]; yaw: number; crouched: boolean; hp: number; alive: boolean; kills: number; deaths: number; score: number; streak: number; respawnAt: number; protectedUntil: number; weapon: WeaponId };
 type State = { type: 'state'; round: number; map: string; time: number; remaining: number; ended: boolean; actors: ActorState[]; pickups: PickupState[]; feed: KillEvent[]; ack: number; slots: { ammo: number; reserve: number; reloadLeft: number }[] };
@@ -25,6 +26,7 @@ export class NetworkGame {
     private seq = 0;
     private round = 0;
     private receivedRound = -1;
+    private processedXp = new Set<string>();
     private lastPacket = 0;
     private generation = 0;
     private interval: ReturnType<typeof setInterval>;
@@ -68,6 +70,7 @@ export class NetworkGame {
         for (const id of [...this.remotes.keys()]) this.remove(id);
         this.game.player.id = 0; this.game.player.name = 'YOU'; this.game.match.localId = 0;
         this.receivedRound = -1;
+        this.processedXp.clear();
     }
     private fail(reason: string) { this.game.mainMenu(); this.game.ui.notice(t(`net.${reason}`)); }
     private remove(id: number) {
@@ -80,6 +83,15 @@ export class NetworkGame {
         this.seq = 0;
     }
     loadout(actor: Actor) { return actor === this.game.player ? this.game.weapons : this.remotes.get(actor.id)?.loadout; }
+    /** Only a host-confirmed elimination can issue this event to the owning guest. */
+    awardRemoteKill(killer: Actor, victim: Actor) {
+        if (!this.host || killer.id === victim.id) return;
+        const remote = this.remotes.get(killer.id);
+        if (!remote) return;
+        const weapon = remote.loadout.current.config.id;
+        const eventId = this.round + ':' + victim.id + ':' + victim.deaths;
+        this.room.send({ type: 'xp', eventId, weapon, amount: XP_PER_KILL }, remote.peer);
+    }
     command(action: 'fire' | 'light' | 'heavy' | 'reload' | 'switch', slot?: number) {
         if (!this.guest) return;
         this.sendPose();
@@ -127,6 +139,18 @@ export class NetworkGame {
                 this.game.ui.hit(!!data.head, !!data.back);
                 if (data.melee) this.game.audio.meleeHit(!!data.back); else this.game.audio.hit(!!data.head);
                 this.game.ui.damageNumber(data.damage, new THREE.Vector3().fromArray(data.point), !!data.head, !!data.back);
+            }
+            if (data.type === 'xp' && peer === `blockstrike-v${PROTOCOL}-${this.room.code}`
+                && typeof data.eventId === 'string' && data.eventId.length < 80
+                && typeof data.weapon === 'string' && WEAPONS[data.weapon]
+                && data.amount === XP_PER_KILL && !this.processedXp.has(data.eventId)) {
+                this.processedXp.add(data.eventId);
+                const result = this.game.progress.awardKillXP(data.weapon);
+                const row = this.game.lastXp.find(entry => entry.weapon === result.weapon);
+                if (row) { row.gained += result.gained; row.to = result.to; }
+                else this.game.lastXp.push(result);
+                this.game.matchPlayerXp += XP_PER_KILL;
+                this.game.ui.xpEarned(result.weapon, XP_PER_KILL);
             }
             if (data.type === 'pickup' && (data.kind === 'health' || data.kind === 'ammo')) this.game.ui.notice(t(`pickup.${data.kind}`, { n: Number(data.amount) }));
             if (data.type === 'shot' && vector(data.from) && vector(data.to)) {

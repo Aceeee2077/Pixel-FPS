@@ -1,0 +1,44 @@
+{
+  "record": {
+    "model": "/assets/weapons/m9/m9.glb",
+    "preview": "/assets/weapons/m9/preview.webp",
+    "status": "refining",
+    "category": "knife",
+    "has_reference": true,
+    "triangles": 3608,
+    "materials": 5,
+    "parts": 9,
+    "validation": {
+      "ok": true,
+      "failures": [],
+      "warnings": [
+        "sparse detail: 3608 tris < 8000 class floor"
+      ]
+    },
+    "blend": "assets-source/blender/m9.blend"
+  },
+  "stats": {
+    "triangles": 3608,
+    "vertices": 1856,
+    "mesh_objects": 9,
+    "empty_nodes": 10,
+    "materials": [
+      "M_BrushedSteel",
+      "M_KnifeRecess",
+      "M_SkinSlot_Blade_Polished",
+      "M_SkinSlot_Grip_Charcoal",
+      "M_SkinSlot_Inlay_Gem"
+    ],
+    "parts": {
+      "Blade": 586,
+      "GuardBody_Batched": 422,
+      "GripScrew0_Batched": 136,
+      "GripScrew0SocketInner_Batched": 4,
+      "HandleBody": 966,
+      "InlayGrip": 402,
+      "LanyardHole_Batched": 360,
+      "RingBody_Batched": 468,
+      "SerrationTooth0_Batched": 264
+    }
+  }
+}

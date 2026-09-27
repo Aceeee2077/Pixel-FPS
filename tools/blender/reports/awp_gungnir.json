@@ -1,0 +1,23 @@
+{
+  "triangles": 22580,
+  "materials": 2,
+  "parts": 2,
+  "validation": {
+    "ok": true,
+    "failures": [],
+    "warnings": []
+  },
+  "provenance": {
+    "author": "WoodenManufacturing",
+    "source": "https://sketchfab.com/3d-models/csgo-weapon-awp-gungnir-e1d6a40dc1f1499c8b960b05d13e7f6c",
+    "licence": "CC-BY-4.0"
+  },
+  "source_file": "csgo_weapon_awp_gungnir.glb",
+  "variant": "gungnir",
+  "weapon": "awp",
+  "target_length_m": 1.24,
+  "origin": "third_party_converted",
+  "model": "/assets/weapons/gungnir/gungnir.glb",
+  "status": "third_party",
+  "blend": "assets-source/blender/gungnir.blend"
+}

@@ -1,0 +1,2 @@
+Placeholder removed. Authored weapon GLBs are published by `npm run publish:weapons`
+from tools/blender/dist/weapons into this directory.

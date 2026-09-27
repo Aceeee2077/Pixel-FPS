@@ -1,0 +1,23 @@
+{
+  "triangles": 13069,
+  "materials": 1,
+  "parts": 1,
+  "validation": {
+    "ok": true,
+    "failures": [],
+    "warnings": []
+  },
+  "provenance": {
+    "author": "WoodenManufacturing",
+    "source": "https://sketchfab.com/3d-models/csgo-ak47-wild-lotus-0af74d693a014c4d9fe5538b99dc0355",
+    "licence": "CC-BY-4.0"
+  },
+  "source_file": "csgo_ak47_wild_lotus.glb",
+  "variant": "wildlotus",
+  "weapon": "ak-47",
+  "target_length_m": 0.88,
+  "origin": "third_party_converted",
+  "model": "/assets/weapons/wildlotus/wildlotus.glb",
+  "status": "third_party",
+  "blend": "assets-source/blender/wildlotus.blend"
+}

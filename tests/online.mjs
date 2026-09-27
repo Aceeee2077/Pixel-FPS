@@ -79,13 +79,27 @@ try {
     await host.evaluate(() => { const g = window.__game; for (let i=0;i<62;i++) {g.tick(.05);g.input.endFrame();} });
     await guest.waitForFunction(() => window.__game.player.alive && window.__game.player.hp === 100);
     check('Host respawns guest after three seconds', true);
+    await guest.evaluate(() => { const g=window.__game; g.weapons.select(2); g.network.command('switch',2); });
+    await host.waitForFunction(() => [...window.__game.network.remotes.values()][0].loadout.slot === 2);
+    const guestXpBefore = await guest.evaluate(() => window.__game.progress.player.kills);
+    await host.evaluate(() => {
+      const g = window.__game, remote = [...g.network.remotes.values()][0];
+      g.player.protectedUntil = 0;
+      g.damage(g.player, 150, remote.actor);
+    });
+    await guest.waitForFunction(before => window.__game.progress.player.kills === before + 1, guestXpBefore);
+    check('Host-confirmed guest kill awards exactly 50 player and knife XP', await guest.evaluate(before => {
+      const g = window.__game;
+      return g.progress.player.kills === before + 1 && g.progress.get('knife').kills >= 1 && g.matchPlayerXp === 50;
+    }, guestXpBefore));
+    await host.evaluate(() => { const g=window.__game; for(let i=0;i<62;i++) {g.tick(.05);g.input.endFrame();} });
     const before = await host.evaluate(() => window.__game.time);
     await host.evaluate(() => { const g = window.__game; g.pause(); g.tick(.05); });
     check('Pause menu does not freeze an online match', await host.evaluate(before => window.__game.time > before, before));
     await host.evaluate(() => { const g=window.__game;g.match.remaining=.01;g.tick(.05); });
     await guest.waitForFunction(() => window.__game.match.ended);
     await guest.evaluate(() => window.__game.tick(.01));
-    check('Both players reach the same match results', await guest.evaluate(() => window.__game.ui.screen === 'results' && window.__game.lastXp.length === 0));
+    check('Both players reach the same match results', await guest.evaluate(() => window.__game.ui.screen === 'results' && window.__game.lastXp.length === 1));
     await host.screenshot({ path: 'test-results/online-results.png' });
     await host.evaluate(() => window.__game.start(true));
     await guest.waitForFunction(() => !window.__game.match.ended && window.__game.player.deaths === 0);

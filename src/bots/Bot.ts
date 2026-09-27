@@ -2,6 +2,11 @@ import * as THREE from 'three';
 import { Weapon } from '../weapons/Weapon';
 import { WEAPONS, WeaponConfig } from '../weapons/WeaponConfig';
 import { weaponModel } from '../weapons/WeaponModel';
+import { WeaponAssetLoader } from '../weapons/WeaponAssetLoader';
+import { DEFAULT_APPEARANCE } from '../weapons/WeaponAppearance';
+
+/** Bots share one loader so a given weapon GLB is fetched and parsed once. */
+const sharedWeaponAssets = new WeaponAssetLoader();
 export type Actor = {
     id: number;
     name: string;
@@ -13,6 +18,9 @@ export type Actor = {
     grounded: boolean;
     crouched: boolean;
     hp: number;
+    armor?: number;
+    helmet?: boolean;
+    hasDefuseKit?: boolean;
     alive: boolean;
     kills: number;
     deaths: number;
@@ -29,6 +37,9 @@ export class Bot implements Actor {
     grounded = true;
     crouched = false;
     hp = 100;
+    armor = 0;
+    helmet = false;
+    hasDefuseKit = false;
     alive = true;
     kills = 0;
     deaths = 0;
@@ -58,6 +69,20 @@ export class Bot implements Actor {
         this.group.add(this.gun);
         scene.add(this.group);
     }
-    equip(config: WeaponConfig) { this.weapon = new Weapon(config); this.group.remove(this.gun); this.gun = weaponModel(config.id); this.gun.position.set(.35, 1.1, -.35); this.group.add(this.gun); }
-    sync(time: number) { this.group.visible = this.alive; this.group.position.copy(this.position); this.group.scale.y = this.crouched ? .7 : 1; const moving = Math.hypot(this.velocity.x, this.velocity.z) > 1; this.legs.forEach((leg, i) => leg.rotation.x = moving ? Math.sin(time * 13 + i * Math.PI) * .45 : 0); }
+    equip(config: WeaponConfig) {
+        this.weapon = new Weapon(config);
+        this.setGun(weaponModel(config.id));
+        // Swap in the authored world model when one is published for this id.
+        const requested = config.id;
+        void sharedWeaponAssets.loadWorld(requested, DEFAULT_APPEARANCE).then(asset => {
+            if (asset && this.weapon.config.id === requested) this.setGun(asset);
+        });
+    }
+    private setGun(model: THREE.Group) {
+        this.group.remove(this.gun);
+        this.gun = model;
+        this.gun.position.set(.35, 1.1, -.35);
+        this.group.add(this.gun);
+    }
+    sync(time: number) { this.group.visible = this.alive; if (this.gun) this.gun.visible = this.alive; this.group.position.copy(this.position); this.group.scale.y = this.crouched ? .7 : 1; const moving = Math.hypot(this.velocity.x, this.velocity.z) > 1; this.legs.forEach((leg, i) => leg.rotation.x = moving ? Math.sin(time * 13 + i * Math.PI) * .45 : 0); }
 }

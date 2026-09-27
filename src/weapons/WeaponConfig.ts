@@ -1,4 +1,5 @@
-export type WeaponId = 'rifle' | 'smg' | 'sniper' | 'shotgun' | 'pistol' | 'knife';
+import { weaponRegistry } from '../data/weapons';
+export type WeaponId = string;
 export type MeleeKind = 'light' | 'heavy';
 /** Melee timing is authored in seconds; the strike lands exactly at `windup`. */
 export interface MeleeAttack {
@@ -51,3 +52,6 @@ export const WEAPONS: Record<string, WeaponConfig> = {
     },
 };
 export const PRIMARY: WeaponId[] = ['rifle', 'smg', 'sniper', 'shotgun'];
+
+// Legacy FFA IDs stay playable; new Defuse weapons are sourced from the registry.
+for (const weapon of weaponRegistry) WEAPONS[weapon.id] = weapon.config;

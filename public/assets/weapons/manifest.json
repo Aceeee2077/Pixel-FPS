@@ -1,0 +1,804 @@
+{
+  "ak-47": "/assets/weapons/ak-47/ak-47.glb",
+  "assets": {
+    "ak-47": {
+      "model": "/assets/weapons/ak-47/ak-47.glb",
+      "preview": "/assets/weapons/ak-47/preview.webp",
+      "status": "game_ready",
+      "category": "rifle",
+      "has_reference": true,
+      "triangles": 9372,
+      "materials": 6,
+      "parts": 23,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 9372 tris < 12000 class floor",
+          "BoltCarrierBody has no UV layer",
+          "ChargingHandleLatch has no UV layer",
+          "ChargingHandlePaddle has no UV layer",
+          "ButtPlate has no UV layer",
+          "MagazineBody has no UV layer",
+          "MagazineBodyFloorPlate has no UV layer",
+          "MagazineBodyRib0_-1 has no UV layer"
+        ]
+      },
+      "blend": "assets-source/blender/ak-47.blend"
+    },
+    "m4a4": {
+      "model": "/assets/weapons/m4a4/m4a4.glb",
+      "preview": "/assets/weapons/m4a4/preview.webp",
+      "status": "refining",
+      "category": "rifle",
+      "has_reference": true,
+      "triangles": 11868,
+      "materials": 7,
+      "parts": 44,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 11868 tris < 12000 class floor",
+          "BoltHead has no UV layer",
+          "CarrierBody has no UV layer",
+          "CarrierTail has no UV layer",
+          "BoltCatch has no UV layer",
+          "ButtPad has no UV layer",
+          "ChargingLatch has no UV layer",
+          "ChargingShaft has no UV layer"
+        ]
+      },
+      "blend": "assets-source/blender/m4a4.blend"
+    },
+    "m4a1-s": {
+      "model": "/assets/weapons/m4a1-s/m4a1-s.glb",
+      "preview": "/assets/weapons/m4a1-s/preview.webp",
+      "status": "refining",
+      "category": "rifle",
+      "has_reference": true,
+      "triangles": 11826,
+      "materials": 7,
+      "parts": 43,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 11826 tris < 12000 class floor",
+          "BoltHead has no UV layer",
+          "CarrierBody has no UV layer",
+          "CarrierTail has no UV layer",
+          "BoltCatch has no UV layer",
+          "ButtPad has no UV layer",
+          "ChargingLatch has no UV layer",
+          "ChargingShaft has no UV layer"
+        ]
+      },
+      "blend": "assets-source/blender/m4a1-s.blend"
+    },
+    "awp": {
+      "model": "/assets/weapons/awp/awp.glb",
+      "preview": "/assets/weapons/awp/preview.webp",
+      "status": "refining",
+      "category": "sniper",
+      "has_reference": true,
+      "triangles": 15475,
+      "materials": 8,
+      "parts": 23,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "BoltBody has no UV layer",
+          "BoltHandleArm has no UV layer",
+          "BoltHandleKnob has no UV layer",
+          "BoltKnob has no UV layer",
+          "BoltRelease has no UV layer",
+          "BoltShroud has no UV layer",
+          "ButtPad has no UV layer",
+          "MagazineBody has no UV layer"
+        ]
+      },
+      "blend": "assets-source/blender/awp.blend"
+    },
+    "glock": {
+      "model": "/assets/weapons/glock/glock.glb",
+      "preview": "/assets/weapons/glock/preview.webp",
+      "status": "refining",
+      "category": "pistol",
+      "has_reference": true,
+      "triangles": 7876,
+      "materials": 6,
+      "parts": 69,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 7876 tris < 8000 class floor",
+          "MagazineBody has no UV layer",
+          "MagazineFloorPlate has no UV layer",
+          "MagazineWitness0_-1 has no UV layer",
+          "MagazineWitness0_1 has no UV layer",
+          "MagazineWitness1_-1 has no UV layer",
+          "MagazineWitness1_1 has no UV layer",
+          "MagazineWitness2_-1 has no UV layer"
+        ]
+      },
+      "blend": "assets-source/blender/glock.blend"
+    },
+    "usp-s": {
+      "model": "/assets/weapons/usp-s/usp-s.glb",
+      "preview": "/assets/weapons/usp-s/preview.webp",
+      "status": "refining",
+      "category": "pistol",
+      "has_reference": true,
+      "triangles": 7862,
+      "materials": 6,
+      "parts": 66,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 7862 tris < 8000 class floor",
+          "BobbedHammer has no UV layer",
+          "HammerPin has no UV layer",
+          "MagazineBody has no UV layer",
+          "MagazineFloorPlate has no UV layer",
+          "MagazineWitness0_-1 has no UV layer",
+          "MagazineWitness0_1 has no UV layer",
+          "MagazineWitness1_-1 has no UV layer"
+        ]
+      },
+      "blend": "assets-source/blender/usp-s.blend"
+    },
+    "deagle": {
+      "model": "/assets/weapons/deagle/deagle.glb",
+      "preview": "/assets/weapons/deagle/preview.webp",
+      "status": "refining",
+      "category": "pistol",
+      "has_reference": true,
+      "triangles": 7919,
+      "materials": 5,
+      "parts": 70,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 7919 tris < 8000 class floor",
+          "HammerPin.001 has no UV layer",
+          "HammerSpur has no UV layer",
+          "HammerPin has no UV layer",
+          "MagazineBody has no UV layer",
+          "MagazineFloorPlate has no UV layer",
+          "MagazineWitness0_-1 has no UV layer",
+          "MagazineWitness0_1 has no UV layer"
+        ]
+      },
+      "blend": "assets-source/blender/deagle.blend"
+    },
+    "famas": {
+      "model": "/assets/weapons/famas/famas.glb",
+      "preview": "/assets/weapons/famas/preview.webp",
+      "status": "refining",
+      "category": "rifle",
+      "has_reference": true,
+      "triangles": 6448,
+      "materials": 4,
+      "parts": 17,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 6448 tris < 12000 class floor",
+          "BoltCarrier.001 has no UV layer",
+          "ChargingHandle has no UV layer",
+          "MagazineBody has no UV layer",
+          "MagazineBodyFloorPlate has no UV layer",
+          "MagazineBodyRib0_-1 has no UV layer",
+          "MagazineBodyRib0_1 has no UV layer",
+          "MagazineBodyRib1_-1 has no UV layer"
+        ]
+      },
+      "blend": "assets-source/blender/famas.blend"
+    },
+    "galil-ar": {
+      "model": "/assets/weapons/galil-ar/galil-ar.glb",
+      "preview": "/assets/weapons/galil-ar/preview.webp",
+      "status": "refining",
+      "category": "rifle",
+      "has_reference": false,
+      "triangles": 7382,
+      "materials": 3,
+      "parts": 19,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 7382 tris < 12000 class floor",
+          "BoltCarrier.001 has no UV layer",
+          "ChargingHandleLatch has no UV layer",
+          "ChargingHandlePaddle has no UV layer",
+          "MagazineBody has no UV layer",
+          "MagazineBodyFloorPlate has no UV layer",
+          "MagazineBodyRib0_-1 has no UV layer",
+          "MagazineBodyRib0_1 has no UV layer"
+        ]
+      },
+      "blend": "assets-source/blender/galil-ar.blend"
+    },
+    "aug": {
+      "model": "/assets/weapons/aug/aug.glb",
+      "preview": "/assets/weapons/aug/preview.webp",
+      "status": "refining",
+      "category": "rifle",
+      "has_reference": true,
+      "triangles": 6797,
+      "materials": 5,
+      "parts": 18,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 6797 tris < 12000 class floor",
+          "BoltCarrier.001 has no UV layer",
+          "ChargingHandle has no UV layer",
+          "MagazineBody has no UV layer",
+          "MagazineBodyFloorPlate has no UV layer",
+          "MagazineRib0 has no UV layer",
+          "MagazineRib1 has no UV layer",
+          "MagazineRib2 has no UV layer"
+        ]
+      },
+      "blend": "assets-source/blender/aug.blend"
+    },
+    "sg-553": {
+      "model": "/assets/weapons/sg-553/sg-553.glb",
+      "preview": "/assets/weapons/sg-553/preview.webp",
+      "status": "refining",
+      "category": "rifle",
+      "has_reference": false,
+      "triangles": 6954,
+      "materials": 4,
+      "parts": 23,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 6954 tris < 12000 class floor",
+          "BoltCarrier.001 has no UV layer",
+          "ChargingHandleLatch has no UV layer",
+          "ChargingHandlePaddle has no UV layer",
+          "MagazineBody has no UV layer",
+          "MagazineBodyFloorPlate has no UV layer",
+          "MagazineBodyRib0_-1 has no UV layer",
+          "MagazineBodyRib0_1 has no UV layer"
+        ]
+      },
+      "blend": "assets-source/blender/sg-553.blend"
+    },
+    "ssg-08": {
+      "model": "/assets/weapons/ssg-08/ssg-08.glb",
+      "preview": "/assets/weapons/ssg-08/preview.webp",
+      "status": "refining",
+      "category": "sniper",
+      "has_reference": true,
+      "triangles": 14101,
+      "materials": 7,
+      "parts": 20,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "BoltBody has no UV layer",
+          "BoltHandleArm has no UV layer",
+          "BoltHandleKnob has no UV layer",
+          "BoltKnob has no UV layer",
+          "BoltShroud has no UV layer",
+          "ButtPad has no UV layer",
+          "MagazineBody has no UV layer",
+          "MagazineCatch has no UV layer"
+        ]
+      },
+      "blend": "assets-source/blender/ssg-08.blend"
+    },
+    "scar-20": {
+      "model": "/assets/weapons/scar-20/scar-20.glb",
+      "preview": "/assets/weapons/scar-20/preview.webp",
+      "status": "refining",
+      "category": "sniper",
+      "has_reference": true,
+      "triangles": 14436,
+      "materials": 7,
+      "parts": 21,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "BoltCam has no UV layer",
+          "BoltCarrierBody has no UV layer",
+          "ChargingHandleLatch has no UV layer",
+          "ChargingHandlePaddle has no UV layer",
+          "ButtPad has no UV layer",
+          "EjectionPort has no UV layer",
+          "MagazineBody has no UV layer",
+          "MagazineCatch has no UV layer"
+        ]
+      },
+      "blend": "assets-source/blender/scar-20.blend"
+    },
+    "g3sg1": {
+      "model": "/assets/weapons/g3sg1/g3sg1.glb",
+      "preview": "/assets/weapons/g3sg1/preview.webp",
+      "status": "refining",
+      "category": "sniper",
+      "has_reference": true,
+      "triangles": 13892,
+      "materials": 7,
+      "parts": 23,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 13892 tris < 14000 class floor",
+          "BoltCarrierBody has no UV layer",
+          "BoltHead has no UV layer",
+          "CockingHandleLatch has no UV layer",
+          "ButtPad has no UV layer",
+          "MagazineBody has no UV layer",
+          "MagazineCatch has no UV layer",
+          "MagazineFloor has no UV layer"
+        ]
+      },
+      "blend": "assets-source/blender/g3sg1.blend"
+    },
+    "butterfly": {
+      "model": "/assets/weapons/butterfly/butterfly.glb",
+      "preview": "/assets/weapons/butterfly/preview.webp",
+      "status": "refining",
+      "category": "knife",
+      "has_reference": true,
+      "triangles": 7952,
+      "materials": 5,
+      "parts": 36,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 7952 tris < 8000 class floor"
+        ]
+      },
+      "blend": "assets-source/blender/butterfly.blend"
+    },
+    "karambit": {
+      "model": "/assets/weapons/karambit/karambit.glb",
+      "preview": "/assets/weapons/karambit/preview.webp",
+      "status": "refining",
+      "category": "knife",
+      "has_reference": true,
+      "triangles": 7970,
+      "materials": 5,
+      "parts": 16,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 7970 tris < 8000 class floor"
+        ]
+      },
+      "blend": "assets-source/blender/karambit.blend"
+    },
+    "m9": {
+      "model": "/assets/weapons/m9/m9.glb",
+      "preview": "/assets/weapons/m9/preview.webp",
+      "status": "refining",
+      "category": "knife",
+      "has_reference": true,
+      "triangles": 7968,
+      "materials": 5,
+      "parts": 9,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 7968 tris < 8000 class floor"
+        ]
+      },
+      "blend": "assets-source/blender/m9.blend"
+    },
+    "knife": {
+      "model": "/assets/weapons/knife/knife.glb",
+      "preview": "/assets/weapons/knife/preview.webp",
+      "status": "refining",
+      "category": "knife",
+      "has_reference": true,
+      "triangles": 7982,
+      "materials": 5,
+      "parts": 16,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 7982 tris < 8000 class floor"
+        ]
+      },
+      "blend": "assets-source/blender/knife.blend"
+    },
+    "p2000": {
+      "model": "/assets/weapons/p2000/p2000.glb",
+      "preview": "/assets/weapons/p2000/preview.webp",
+      "status": "refining",
+      "category": "pistol",
+      "has_reference": true,
+      "triangles": 7897,
+      "materials": 6,
+      "parts": 70,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 7897 tris < 8000 class floor",
+          "BarrelCrown has no UV layer",
+          "BobbedHammer has no UV layer",
+          "MagazineBody has no UV layer",
+          "MagazineFloorPlate has no UV layer",
+          "MagazineWitness0_-1 has no UV layer",
+          "MagazineWitness0_1 has no UV layer",
+          "MagazineWitness1_-1 has no UV layer"
+        ]
+      },
+      "blend": "assets-source/blender/p2000.blend"
+    },
+    "p250": {
+      "model": "/assets/weapons/p250/p250.glb",
+      "preview": "/assets/weapons/p250/preview.webp",
+      "status": "refining",
+      "category": "pistol",
+      "has_reference": true,
+      "triangles": 7941,
+      "materials": 6,
+      "parts": 68,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 7941 tris < 8000 class floor",
+          "Barrel has no UV layer",
+          "MagazineBody has no UV layer",
+          "MagazineFloorPlate has no UV layer",
+          "MagazineWitness0_-1 has no UV layer",
+          "MagazineWitness0_1 has no UV layer",
+          "MagazineWitness1_-1 has no UV layer",
+          "MagazineWitness1_1 has no UV layer"
+        ]
+      },
+      "blend": "assets-source/blender/p250.blend"
+    },
+    "five-seven": {
+      "model": "/assets/weapons/five-seven/five-seven.glb",
+      "preview": "/assets/weapons/five-seven/preview.webp",
+      "status": "refining",
+      "category": "pistol",
+      "has_reference": true,
+      "triangles": 7891,
+      "materials": 6,
+      "parts": 84,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 7891 tris < 8000 class floor",
+          "BarrelCrown has no UV layer",
+          "MagazineBody has no UV layer",
+          "MagazineFloorPlate has no UV layer",
+          "MagazineWitness0_-1 has no UV layer",
+          "MagazineWitness0_1 has no UV layer",
+          "MagazineWitness1_-1 has no UV layer",
+          "MagazineWitness1_1 has no UV layer"
+        ]
+      },
+      "blend": "assets-source/blender/five-seven.blend"
+    },
+    "tec-9": {
+      "model": "/assets/weapons/tec-9/tec-9.glb",
+      "preview": "/assets/weapons/tec-9/preview.webp",
+      "status": "refining",
+      "category": "pistol",
+      "has_reference": true,
+      "triangles": 7927,
+      "materials": 6,
+      "parts": 48,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 7927 tris < 8000 class floor",
+          "MagazineBody has no UV layer",
+          "MagazineFloorPlate has no UV layer",
+          "MagazineCatch has no UV layer",
+          "MagazineTower has no UV layer",
+          "MagazineWell has no UV layer",
+          "PistolGrip has no UV layer",
+          "BoltTrack has no UV layer"
+        ]
+      },
+      "blend": "assets-source/blender/tec-9.blend"
+    },
+    "cz75": {
+      "model": "/assets/weapons/cz75/cz75.glb",
+      "preview": "/assets/weapons/cz75/preview.webp",
+      "status": "refining",
+      "category": "pistol",
+      "has_reference": true,
+      "triangles": 7956,
+      "materials": 6,
+      "parts": 74,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 7956 tris < 8000 class floor",
+          "FireSelector has no UV layer",
+          "HammerSpur has no UV layer",
+          "HammerPin0 has no UV layer",
+          "MagazineBody has no UV layer",
+          "MagazineFloorPlate has no UV layer",
+          "MagazineWell has no UV layer",
+          "MagazineWitness0_-1 has no UV layer"
+        ]
+      },
+      "blend": "assets-source/blender/cz75.blend"
+    },
+    "mp9": {
+      "model": "/assets/weapons/mp9/mp9.glb",
+      "preview": "/assets/weapons/mp9/preview.webp",
+      "status": "refining",
+      "category": "smg",
+      "has_reference": true,
+      "triangles": 8923,
+      "materials": 6,
+      "parts": 63,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 8923 tris < 10000 class floor",
+          "BoltBody has no UV layer",
+          "BoltLug0 has no UV layer",
+          "BoltLug1 has no UV layer",
+          "BoltLug2 has no UV layer",
+          "CockingHandleBar has no UV layer",
+          "CockingHandleGrip0 has no UV layer",
+          "CockingHandleGrip1 has no UV layer"
+        ]
+      },
+      "blend": "assets-source/blender/mp9.blend"
+    },
+    "mac-10": {
+      "model": "/assets/weapons/mac-10/mac-10.glb",
+      "preview": "/assets/weapons/mac-10/preview.webp",
+      "status": "refining",
+      "category": "smg",
+      "has_reference": true,
+      "triangles": 8878,
+      "materials": 6,
+      "parts": 59,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 8884 tris < 10000 class floor",
+          "BoltBody has no UV layer",
+          "BoltLug0 has no UV layer",
+          "BoltLug1 has no UV layer",
+          "BoltLug2 has no UV layer",
+          "BoltLug3 has no UV layer",
+          "CockingHandleGrip has no UV layer",
+          "CockingHandleKnob has no UV layer"
+        ]
+      },
+      "blend": "assets-source/blender/mac-10.blend"
+    },
+    "mp7": {
+      "model": "/assets/weapons/mp7/mp7.glb",
+      "preview": "/assets/weapons/mp7/preview.webp",
+      "status": "refining",
+      "category": "smg",
+      "has_reference": true,
+      "triangles": 8799,
+      "materials": 6,
+      "parts": 72,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 8799 tris < 10000 class floor",
+          "Barrel has no UV layer",
+          "BoltBody has no UV layer",
+          "BoltLug0 has no UV layer",
+          "BoltLug1 has no UV layer",
+          "BoltLug2 has no UV layer",
+          "CockingHandleBar has no UV layer",
+          "CockingHandleGrip0 has no UV layer"
+        ]
+      },
+      "blend": "assets-source/blender/mp7.blend"
+    },
+    "pp-bizon": {
+      "model": "/assets/weapons/pp-bizon/pp-bizon.glb",
+      "preview": "/assets/weapons/pp-bizon/preview.webp",
+      "status": "refining",
+      "category": "smg",
+      "has_reference": true,
+      "triangles": 8776,
+      "materials": 6,
+      "parts": 152,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 8816 tris < 10000 class floor",
+          "BoltCarrierBody has no UV layer",
+          "BoltLug0 has no UV layer",
+          "BoltLug1 has no UV layer",
+          "BoltLug2 has no UV layer",
+          "BoltLug3 has no UV layer",
+          "BoltLug4 has no UV layer",
+          "ChargingHandleKnob has no UV layer"
+        ]
+      },
+      "blend": "assets-source/blender/pp-bizon.blend"
+    },
+    "p90": {
+      "model": "/assets/weapons/p90/p90.glb",
+      "preview": "/assets/weapons/p90/preview.webp",
+      "status": "refining",
+      "category": "smg",
+      "has_reference": true,
+      "triangles": 8790,
+      "materials": 6,
+      "parts": 143,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 8790 tris < 10000 class floor",
+          "BoltBody has no UV layer",
+          "BoltLug0 has no UV layer",
+          "BoltLug1 has no UV layer",
+          "BoltLug2 has no UV layer",
+          "ChargingHandleBar has no UV layer",
+          "ChargingHandleGrip0 has no UV layer",
+          "ChargingHandleGrip1 has no UV layer"
+        ]
+      },
+      "blend": "assets-source/blender/p90.blend"
+    },
+    "ump-45": {
+      "model": "/assets/weapons/ump-45/ump-45.glb",
+      "preview": "/assets/weapons/ump-45/preview.webp",
+      "status": "refining",
+      "category": "smg",
+      "has_reference": false,
+      "triangles": 8660,
+      "materials": 6,
+      "parts": 77,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "sparse detail: 8666 tris < 10000 class floor",
+          "BoltBody has no UV layer",
+          "BoltLug0 has no UV layer",
+          "BoltLug1 has no UV layer",
+          "BoltLug2 has no UV layer",
+          "BoltLug3 has no UV layer",
+          "ChargingHandleGrip0 has no UV layer",
+          "ChargingHandleGrip1 has no UV layer"
+        ]
+      },
+      "blend": "assets-source/blender/ump-45.blend"
+    },
+    "wildlotus": {
+      "triangles": 13069,
+      "materials": 1,
+      "parts": 1,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": []
+      },
+      "provenance": {
+        "author": "WoodenManufacturing",
+        "source": "https://sketchfab.com/3d-models/csgo-ak47-wild-lotus-0af74d693a014c4d9fe5538b99dc0355",
+        "licence": "CC-BY-4.0"
+      },
+      "source_file": "csgo_ak47_wild_lotus.glb",
+      "variant": "wildlotus",
+      "weapon": "ak-47",
+      "target_length_m": 0.88,
+      "origin": "third_party_converted",
+      "model": "/assets/weapons/wildlotus/wildlotus.glb",
+      "status": "third_party",
+      "blend": "assets-source/blender/wildlotus.blend"
+    },
+    "gungnir": {
+      "triangles": 22580,
+      "materials": 2,
+      "parts": 2,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": []
+      },
+      "provenance": {
+        "author": "WoodenManufacturing",
+        "source": "https://sketchfab.com/3d-models/csgo-weapon-awp-gungnir-e1d6a40dc1f1499c8b960b05d13e7f6c",
+        "licence": "CC-BY-4.0"
+      },
+      "source_file": "csgo_weapon_awp_gungnir.glb",
+      "variant": "gungnir",
+      "weapon": "awp",
+      "target_length_m": 1.24,
+      "origin": "third_party_converted",
+      "model": "/assets/weapons/gungnir/gungnir.glb",
+      "status": "third_party",
+      "blend": "assets-source/blender/gungnir.blend"
+    },
+    "butterfly-csstlyed": {
+      "triangles": 16218,
+      "materials": 8,
+      "parts": 11,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "Blade.001 has no UV layer"
+        ]
+      },
+      "provenance": {
+        "author": "Aslady",
+        "source": "https://sketchfab.com/3d-models/csgo-styled-butterfly-knife-6f023e5fb12947e18ce2d93d38e13cfd",
+        "licence": "CC-BY-4.0"
+      },
+      "source_file": "csgo-styled_butterfly_knife.glb",
+      "variant": "butterfly-csstlyed",
+      "weapon": "butterfly",
+      "target_length_m": 0.24,
+      "origin": "third_party_converted",
+      "model": "/assets/weapons/butterfly-csstlyed/butterfly-csstlyed.glb",
+      "status": "third_party",
+      "blend": "assets-source/blender/butterfly-csstlyed.blend"
+    }
+  },
+  "m4a4": "/assets/weapons/m4a4/m4a4.glb",
+  "m4a1-s": "/assets/weapons/m4a1-s/m4a1-s.glb",
+  "awp": "/assets/weapons/awp/awp.glb",
+  "glock": "/assets/weapons/glock/glock.glb",
+  "usp-s": "/assets/weapons/usp-s/usp-s.glb",
+  "deagle": "/assets/weapons/deagle/deagle.glb",
+  "famas": "/assets/weapons/famas/famas.glb",
+  "galil-ar": "/assets/weapons/galil-ar/galil-ar.glb",
+  "aug": "/assets/weapons/aug/aug.glb",
+  "sg-553": "/assets/weapons/sg-553/sg-553.glb",
+  "ssg-08": "/assets/weapons/ssg-08/ssg-08.glb",
+  "scar-20": "/assets/weapons/scar-20/scar-20.glb",
+  "g3sg1": "/assets/weapons/g3sg1/g3sg1.glb",
+  "butterfly": "/assets/weapons/butterfly/butterfly.glb",
+  "karambit": "/assets/weapons/karambit/karambit.glb",
+  "m9": "/assets/weapons/m9/m9.glb",
+  "knife": "/assets/weapons/knife/knife.glb",
+  "p2000": "/assets/weapons/p2000/p2000.glb",
+  "p250": "/assets/weapons/p250/p250.glb",
+  "five-seven": "/assets/weapons/five-seven/five-seven.glb",
+  "tec-9": "/assets/weapons/tec-9/tec-9.glb",
+  "cz75": "/assets/weapons/cz75/cz75.glb",
+  "mp9": "/assets/weapons/mp9/mp9.glb",
+  "mac-10": "/assets/weapons/mac-10/mac-10.glb",
+  "mp7": "/assets/weapons/mp7/mp7.glb",
+  "pp-bizon": "/assets/weapons/pp-bizon/pp-bizon.glb",
+  "p90": "/assets/weapons/p90/p90.glb",
+  "ump-45": "/assets/weapons/ump-45/ump-45.glb",
+  "wildlotus": "/assets/weapons/wildlotus/wildlotus.glb",
+  "gungnir": "/assets/weapons/gungnir/gungnir.glb",
+  "butterfly-csstlyed": "/assets/weapons/butterfly-csstlyed/butterfly-csstlyed.glb"
+}

@@ -1,0 +1,68 @@
+{
+  "record": {
+    "model": "/assets/weapons/awp/awp.glb",
+    "preview": "/assets/weapons/awp/preview.webp",
+    "status": "refining",
+    "category": "sniper",
+    "has_reference": true,
+    "triangles": 7599,
+    "materials": 8,
+    "parts": 23,
+    "validation": {
+      "ok": true,
+      "failures": [],
+      "warnings": [
+        "sparse detail: 7599 tris < 14000 class floor",
+        "BoltBody has no UV layer",
+        "BoltHandleArm has no UV layer",
+        "BoltHandleKnob has no UV layer",
+        "BoltKnob has no UV layer",
+        "BoltRelease has no UV layer",
+        "BoltShroud has no UV layer",
+        "ButtPad has no UV layer"
+      ]
+    },
+    "blend": "assets-source/blender/awp.blend"
+  },
+  "stats": {
+    "triangles": 7599,
+    "vertices": 3498,
+    "mesh_objects": 23,
+    "empty_nodes": 10,
+    "materials": [
+      "M_BlackAnodized",
+      "M_BrushedSteel",
+      "M_Gunmetal",
+      "M_PhosphateSteel",
+      "M_PolymerGreen",
+      "M_PolymerGrey",
+      "M_Rubber",
+      "M_ScopeGlass"
+    ],
+    "parts": {
+      "Action_Batched": 590,
+      "ActionScrew0_Batched": 223,
+      "Barrel_Batched": 2234,
+      "BoltBody": 88,
+      "BoltHandleArm": 10,
+      "BoltHandleKnob": 14,
+      "BoltKnob": 68,
+      "BoltRelease": 36,
+      "BoltShroud": 66,
+      "ButtPad": 28,
+      "CheekRiser_Batched": 122,
+      "MagazineBody": 38,
+      "MagazineCatch": 28,
+      "MagazineFloor": 50,
+      "MagazineSpine": 50,
+      "MagazineWell": 48,
+      "PistolGripPanelL_Batched": 2,
+      "ScopeObjectiveGlass_Batched": 36,
+      "ScopeTube": 162,
+      "Stock": 3584,
+      "TriggerBlade": 50,
+      "TriggerGuard": 44,
+      "TriggerShoe": 28
+    }
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "record": {
+    "model": "/assets/weapons/g3sg1/g3sg1.glb",
+    "preview": "/assets/weapons/g3sg1/preview.webp",
+    "status": "refining",
+    "category": "sniper",
+    "has_reference": true,
+    "triangles": 4683,
+    "materials": 7,
+    "parts": 23,
+    "validation": {
+      "ok": true,
+      "failures": [],
+      "warnings": [
+        "sparse detail: 4683 tris < 14000 class floor",
+        "BoltCarrierBody has no UV layer",
+        "BoltHead has no UV layer",
+        "CockingHandleLatch has no UV layer",
+        "ButtPad has no UV layer",
+        "MagazineBody has no UV layer",
+        "MagazineCatch has no UV layer",
+        "MagazineFloor has no UV layer"
+      ]
+    },
+    "blend": "assets-source/blender/g3sg1.blend"
+  },
+  "stats": {
+    "triangles": 4683,
+    "vertices": 2582,
+    "mesh_objects": 23,
+    "empty_nodes": 10,
+    "materials": [
+      "M_BlackAnodized",
+      "M_BrushedSteel",
+      "M_Gunmetal",
+      "M_PhosphateSteel",
+      "M_PolymerBlack",
+      "M_Rubber",
+      "M_ScopeGlass"
+    ],
+    "parts": {
+      "Barrel_Batched": 1110,
+      "BoltCarrierBody": 44,
+      "BoltHead": 90,
+      "CockingHandleLatch": 44,
+      "BufferTube_Batched": 502,
+      "ButtPad": 44,
+      "ClawMountBase_Batched": 1017,
+      "FrontSightBase_Batched": 482,
+      "Handguard_Batched": 488,
+      "MagazineBody": 60,
+      "MagazineCatch": 44,
+      "MagazineFloor": 78,
+      "MagazineSpine": 78,
+      "MagazineWell": 76,
+      "ScopeObjectiveGlass_Batched": 56,
+      "StockButt": 62,
+      "StockCheek": 56,
+      "StockFrame": 60,
+      "StockLatch": 44,
+      "StockSleeve": 66,
+      "MagRelease": 44,
+      "TriggerAssemblyBlade": 76,
+      "TriggerAssemblyGuard": 62
+    }
+  }
+}

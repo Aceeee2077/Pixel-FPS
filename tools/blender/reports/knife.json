@@ -1,0 +1,51 @@
+{
+  "record": {
+    "model": "/assets/weapons/knife/knife.glb",
+    "preview": "/assets/weapons/knife/preview.webp",
+    "status": "refining",
+    "category": "knife",
+    "has_reference": true,
+    "triangles": 3614,
+    "materials": 5,
+    "parts": 16,
+    "validation": {
+      "ok": true,
+      "failures": [],
+      "warnings": [
+        "sparse detail: 3614 tris < 8000 class floor"
+      ]
+    },
+    "blend": "assets-source/blender/knife.blend"
+  },
+  "stats": {
+    "triangles": 3614,
+    "vertices": 1860,
+    "mesh_objects": 16,
+    "empty_nodes": 8,
+    "materials": [
+      "M_BrushedSteel",
+      "M_KnifeRecess",
+      "M_SkinSlot_Blade_Polished",
+      "M_SkinSlot_Grip_Charcoal",
+      "M_SkinSlot_Inlay_Gem"
+    ],
+    "parts": {
+      "Blade": 572,
+      "BladeJimping0": 24,
+      "BladeJimping1": 24,
+      "BladeJimping2": 24,
+      "BladeJimping3": 24,
+      "BladeJimping4": 24,
+      "BladeJimping5": 24,
+      "BladeJimping6": 24,
+      "BladeJimping7": 24,
+      "BladeJimping8": 24,
+      "GuardBody": 236,
+      "GripPin0_Batched": 204,
+      "GripPin0SocketInner_Batched": 6,
+      "HandleBody": 1102,
+      "InlayLeft_Batched": 904,
+      "LanyardTube_Batched": 374
+    }
+  }
+}

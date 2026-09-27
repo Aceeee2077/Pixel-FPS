@@ -1,3 +1,4 @@
+import { getWeapon } from '../data/weapons';
 import type { Settings } from '../core/Settings';
 import type { MeleeKind, WeaponId } from '../weapons/WeaponConfig';
 import type { Weapon } from '../weapons/Weapon';
@@ -106,7 +107,8 @@ export class AudioManager {
     }
     gun(id: WeaponId, distance = 0, pan = 0) {
         if (!this.context || !this.mix || id === 'knife' || distance >= 200) return;
-        const local = distance === 0, profile = GUN_SOUND[id], variant = this.variation++ % 4;
+        const family = getWeapon(id)?.modelFamily ?? id;
+        const local = distance === 0, profile = GUN_SOUND[family] ?? GUN_SOUND.rifle, variant = this.variation++ % 4;
         const attenuation = local ? 1 : .58 / Math.pow(1 + distance / 23, 1.05) * Math.min(1, (200 - distance) / 35);
         const buffer = this.buffer('gun:' + id, variant, () => gunSamples(id, this.context!.sampleRate, variant));
         this.play(buffer, profile.level * attenuation, {
@@ -127,7 +129,7 @@ export class AudioManager {
     drawWeapon(id: WeaponId) {
         this.cancelWeapon();
         if (id === 'knife') return;
-        this.foley('draw', .19, .08); this.foley(id === 'pistol' ? 'mag-in' : 'bolt', .1, .2);
+        this.foley('draw', .19, .08); this.foley((getWeapon(id)?.modelFamily ?? id) === 'pistol' ? 'mag-in' : 'bolt', .1, .2);
     }
     drawBlade(folding = false) {
         this.cancelWeapon();
@@ -143,7 +145,7 @@ export class AudioManager {
     reload(weapon: Weapon) {
         this.cancelWeapon();
         if (weapon.config.id === 'knife' || weapon.reloadLeft <= 0) return;
-        this.reloadTrack = { weapon, cues: RELOAD_CUES[weapon.config.id], next: 0 };
+        this.reloadTrack = { weapon, cues: RELOAD_CUES[getWeapon(weapon.config.id)?.modelFamily ?? weapon.config.id] ?? RELOAD_CUES.rifle, next: 0 };
         this.updateWeapon(weapon, true);
     }
     /** Progress follows game time, so pausing, dying or switching cannot leave delayed reload sounds. */
@@ -151,7 +153,7 @@ export class AudioManager {
         if (!alive) { this.cancelWeapon(); return; }
         if (this.reloadTrack && this.reloadTrack.weapon !== weapon) this.cancelWeapon();
         if (!this.reloadTrack && weapon.reloadLeft > 0 && weapon.config.id !== 'knife') {
-            const cues = RELOAD_CUES[weapon.config.id], progress = 1 - weapon.reloadLeft / weapon.config.reloadTime;
+            const cues = RELOAD_CUES[getWeapon(weapon.config.id)?.modelFamily ?? weapon.config.id] ?? RELOAD_CUES.rifle, progress = 1 - weapon.reloadLeft / weapon.config.reloadTime;
             this.reloadTrack = { weapon, cues, next: cues.findIndex(c => c.at >= progress) };
             if (this.reloadTrack.next < 0) this.reloadTrack = undefined;
         }

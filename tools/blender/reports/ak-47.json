@@ -1,0 +1,66 @@
+{
+  "record": {
+    "model": "/assets/weapons/ak-47/ak-47.glb",
+    "preview": "/assets/weapons/ak-47/preview.webp",
+    "status": "game_ready",
+    "category": "rifle",
+    "has_reference": true,
+    "triangles": 9372,
+    "materials": 6,
+    "parts": 23,
+    "validation": {
+      "ok": true,
+      "failures": [],
+      "warnings": [
+        "sparse detail: 9372 tris < 12000 class floor",
+        "BoltCarrierBody has no UV layer",
+        "ChargingHandleLatch has no UV layer",
+        "ChargingHandlePaddle has no UV layer",
+        "ButtPlate has no UV layer",
+        "MagazineBody has no UV layer",
+        "MagazineBodyFloorPlate has no UV layer",
+        "MagazineBodyRib0_-1 has no UV layer"
+      ]
+    },
+    "blend": "assets-source/blender/ak-47.blend"
+  },
+  "stats": {
+    "triangles": 9372,
+    "vertices": 4822,
+    "mesh_objects": 23,
+    "empty_nodes": 11,
+    "materials": [
+      "M_BlackAnodized",
+      "M_BrushedSteel",
+      "M_Gunmetal",
+      "M_Rubber",
+      "M_Wood",
+      "M_WoodDark"
+    ],
+    "parts": {
+      "Barrel_Batched": 3656,
+      "BoltCarrierBody": 188,
+      "ChargingHandleLatch": 332,
+      "ChargingHandlePaddle": 332,
+      "ButtPlate": 188,
+      "CleaningRod_Batched": 608,
+      "FrontTrunnion_Batched": 1112,
+      "LowerHandguard_Batched": 692,
+      "LowerHandguardSlot0_Batched": 140,
+      "MagazineBody": 276,
+      "MagazineBodyFloorPlate": 324,
+      "MagazineBodyRib0_-1": 12,
+      "MagazineBodyRib0_1": 12,
+      "MagazineBodyRib1_-1": 12,
+      "MagazineBodyRib1_1": 12,
+      "MagazineBodyRib2_-1": 12,
+      "MagazineBodyRib2_1": 12,
+      "MagazineCatch": 188,
+      "SafetyLever.001": 204,
+      "Stock": 284,
+      "StockTangs": 188,
+      "TriggerAssemblyBlade": 320,
+      "TriggerAssemblyGuard": 268
+    }
+  }
+}

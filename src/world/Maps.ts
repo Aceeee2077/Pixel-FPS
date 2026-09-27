@@ -20,6 +20,7 @@ export interface MapDefinition {
     plan: string[];
     planColors: { open: number; structure: number; deck: number; prop: number; water: number; accent: number };
     spawns: [number, number, number?][];
+    tactical?: { sites: { A: [number, number, number]; B: [number, number, number] }; attackers: number[]; defenders: number[] };
     build(k: MapKit): void;
 }
 
@@ -46,6 +47,7 @@ const BLOCKYARD: MapDefinition = {
     ],
     planColors: { open: 0xc8c6ad, structure: 0xe7e6d2, deck: 0x3e6061, prop: 0x879591, water: 0x8fb6c0, accent: 0xd5f66b },
     spawns: [[-27, 35], [34, 39], [-57, -43], [56, -38], [0, -60], [-62, 30], [62, 18], [8, 61], [41, -62], [-38, 61], [64, 59], [-60, -64]],
+    tactical: { sites: { A: [8, 61, 8], B: [0, -60, 8] }, attackers: [2, 5, 9, 11, 0], defenders: [3, 6, 8, 10, 1] },
     build(k) {
         const sand = 0xc8c6ad, cream = 0xe7e6d2, dark = 0x3e6061, road = 0x879591;
         k.box(0, -.5, 0, 176, 1, 176, sand);
@@ -979,7 +981,89 @@ const OIL_RIG: MapDefinition = {
     },
 };
 
-export const MAPS: MapDefinition[] = [BLOCKYARD, DUNE_RIDGE, HARBORLINE, SUBWAY, VERTICAL_CITY, GLACIER, ARENA, FACTORY, TEMPLE, OIL_RIG];
+const SANDSTORM: MapDefinition = {
+    id: 'sandstorm', name: 'SANDSTORM', tag: 'TACTICAL 01', theme: '沿海旧城 · 风蚀市场',
+    blurb: '一条高架市场横跨低处通道，北侧仓库和南侧船坞构成两条进攻翼。原创 5v5 爆破场。',
+    size: 90, sky: 0xc9d5cf, fog: 0xd7c7a5, fogNear: 80, fogFar: 230,
+    hemi: [0xffefd8, 0x796f5d], hemiIntensity: 2.2, sun: 0xffddab, sunIntensity: 2.7, ground: 0xcbb58a,
+    plan: [
+        '..............',
+        '..####..####..',
+        '..##.......##.',
+        '..##..==...##.',
+        '.....==.......',
+        '...#.....#....',
+        '.....##.......',
+        '..............',
+        '.....##.......',
+        '...#.....#....',
+        '.....==.......',
+        '..##..==...##.',
+        '..####..####..',
+        '..............',
+    ],
+    planColors: { open: 0xcbb58a, structure: 0xa88d69, deck: 0x766a5c, prop: 0x865e44, water: 0x6e9b9f, accent: 0xd6a958 },
+    spawns: [[-72, -36], [-72, -18], [-72, 0], [-72, 18], [-72, 36],
+        [72, -36], [72, -18], [72, 0], [72, 18], [72, 36],
+        [-38, -44], [-38, 44], [37, -46], [37, 46]],
+    tactical: { sites: { A: [37, -46, 9], B: [37, 46, 9] },
+        attackers: [0, 1, 2, 3, 4], defenders: [5, 6, 7, 8, 9] },
+    build(k) {
+        const sand = 0xcbb58a, sandstone = 0xb9a07b, plaster = 0xe5d6b6,
+            dark = 0x655c50, timber = 0x765b42, rust = 0x96674c, sea = 0x6e9b9f;
+        k.box(0, -.5, 0, 180, 1, 180, sand);
+        for (const z of [-46, 0, 46]) k.paint(0, z, 168, 11, z === 0 ? 0xb7a787 : 0xc2ad82);
+        k.paint(74, 0, 12, 160, 0xa79b83);
+        k.paint(37, -46, 16, 16, 0xbca46e);
+        k.paint(37, 46, 16, 16, 0xbca46e);
+        k.paint(-82, 0, 8, 170, sea);
+        // North warehouse and south quay have recessed courtyards facing the lanes.
+        for (const z of [-69, 69]) {
+            for (const x of [-47, -19, 20, 55]) {
+                k.box(x, 4.5, z, 18, 9, 17, sandstone);
+                k.box(x, 9.2, z, 19, .45, 18, dark, false);
+                k.box(x, 5, z > 0 ? z - 8.6 : z + 8.6, 4, 5, .3, timber, false);
+            }
+        }
+        // The raised market roof leaves a true walkable passage underneath.
+        k.platform(0, 3.2, 0, 25, 17, sandstone, dark);
+        for (const x of [-11, 11]) {
+            for (const z of [-7, 7]) k.box(x, 1.6, z, 1, 3.2, 1, sandstone);
+        }
+        for (const z of [-8.5, 8.5]) k.box(0, 4.3, z, 27, 2.2, .6, plaster, false);
+        k.sign('MARKET', -2, 4.5, -9, 8, 1.2, dark, 0xf5e9cb);
+        // Short site walls and props break sightlines without closing the routes.
+        for (const [x, z, w, d] of [[-35, -24, 10, 2], [-35, 24, 10, 2],
+            [10, -25, 2, 10], [10, 25, 2, 10], [52, -22, 8, 2], [52, 22, 8, 2]] as const)
+            k.box(x, 1.5, z, w, 3, d, plaster);
+        for (const [x, z] of [[-28, -58], [-3, -55], [4, 55], [-26, 58], [54, -55], [55, 55]] as const)
+            k.crate(x, 0, z, 2, timber);
+        for (const [x, z] of [[-5, -39], [5, 39], [56, -39], [56, 39]] as const)
+            k.barrel(x, 0, z, rust);
+        for (const [x, z] of [[-78, -78], [78, -78], [-78, 78], [78, 78], [0, -81], [0, 81]] as const)
+            k.lamp(x, 0, z, 7);
+        // Decorative awnings and upper windows do not affect collision.
+        for (const z of [-35, 35]) {
+            k.box(-18, 4.5, z, 18, .16, 8, z < 0 ? 0x7e9b95 : 0xa56a57, false);
+            k.box(-27, 2.4, z, .2, 4.8, .2, timber, false);
+            k.box(-9, 2.4, z, .2, 4.8, .2, timber, false);
+        }
+        for (const x of [-60, -20, 20, 60]) {
+            k.box(x, 7, -82, 10, 8, 7, plaster, false);
+            k.box(x, 7, 82, 10, 8, 7, plaster, false);
+        }
+        k.route('A LONG', [[-72, 0, -36], [-54, 0, -46], [-28, 0, -46], [0, 0, -46], [37, 0, -46]]);
+        k.route('MID', [[-72, 0, 0], [-48, 0, 0], [-18, 0, 0], [0, 0, 0], [20, 0, 0], [62, 0, 0]]);
+        k.route('B ROUTE', [[-72, 0, 36], [-52, 0, 46], [-25, 0, 46], [0, 0, 46], [37, 0, 46]]);
+        k.route('SHORT', [[15, 0, 0], [20, 0, -20], [25, 0, -35], [37, 0, -46]]);
+        k.route('CONNECTOR', [[15, 0, 0], [20, 0, 20], [25, 0, 35], [37, 0, 46]]);
+        k.route('UNDERPASS', [[-18, 0, 0], [0, 0, 0], [18, 0, 0]]);
+        k.route('TUNNEL', [[-54, 0, 46], [-40, 0, 25], [-25, 0, 10], [-18, 0, 0]]);
+        k.route('ROTATION', [[37, 0, -46], [61, 0, -28], [70, 0, 0], [61, 0, 28], [37, 0, 46]]);
+    },
+};
+
+export const MAPS: MapDefinition[] = [BLOCKYARD, DUNE_RIDGE, HARBORLINE, SUBWAY, VERTICAL_CITY, GLACIER, ARENA, FACTORY, TEMPLE, OIL_RIG, SANDSTORM];
 export const DEFAULT_MAP_ID = BLOCKYARD.id;
 export const RANDOM_MAP_ID = 'random';
 export function mapById(id: string) { return MAPS.find(m => m.id === id) ?? MAPS[0]; }

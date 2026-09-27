@@ -50,6 +50,11 @@ const MATERIAL_DEFAULTS = {
     distant: { color: 0x9bb6b2, roughness: 0.95, metalness: 0 },
     distant2: { color: 0xb1c3ba, roughness: 0.95, metalness: 0 },
     'container:blue': { color: 0x6c9eaa, roughness: 0.55, metalness: 0.35 },
+    sand: { color: 0xd9c48f, roughness: 0.98, metalness: 0 },
+    stone: { color: 0xcbb894, roughness: 0.92, metalness: 0 },
+    dune: { color: 0xe0d0a0, roughness: 1, metalness: 0 },
+    rust: { color: 0xb5824f, roughness: 0.7, metalness: 0.35 },
+    ripple: { color: 0xcdb684, roughness: 0.7, metalness: 0 },
     'container:rust': { color: 0xce8163, roughness: 0.7, metalness: 0.3 },
     'container:tan': { color: 0xe1bd6b, roughness: 0.6, metalness: 0.3 },
     'container:green': { color: 0xa9bbae, roughness: 0.55, metalness: 0.35 },
@@ -57,8 +62,13 @@ const MATERIAL_DEFAULTS = {
 
 function mat(name, color, roughness, metalness) {
     if (!mats.has(name)) {
-        const d = MATERIAL_DEFAULTS[name] ?? { color: color ?? 0xcccccc, roughness: roughness ?? 0.92, metalness: metalness ?? 0 };
-        mats.set(name, new THREE.MeshStandardMaterial({ name, color: d.color, roughness: d.roughness, metalness: d.metalness }));
+        const d = MATERIAL_DEFAULTS[name] ?? {};
+        mats.set(name, new THREE.MeshStandardMaterial({
+            name,
+            color: color ?? d.color ?? 0xcccccc,
+            roughness: roughness ?? d.roughness ?? 0.92,
+            metalness: metalness ?? d.metalness ?? 0,
+        }));
     }
     return mats.get(name);
 }
@@ -98,7 +108,7 @@ class Modeler {
     }
 
     sphere(x, y, z, r, name, detail = 1) {
-        const mesh = new THREE.Mesh(new THREE.IcosahedronGeometry(r, detail), mat(name));
+        const mesh = new THREE.Mesh(new THREE.SphereGeometry(r, Math.max(8, detail * 8), Math.max(6, detail * 6)), mat(name));
         mesh.position.set(x, y, z);
         this.add(mesh, name);
         return mesh;
@@ -389,6 +399,255 @@ function underpass(m) {
     m.box(13.5, 5.7, -48, 12.3, 0.4, 20.3, 'rooftrim');
 }
 
+/** Solid staircase matching MapKit.stairs: every step fills from the base up. */
+function stairsSteps(m, x, startZ, direction, count, rise, depth, width, matName) {
+    for (let i = 0; i < count; i++) {
+        m.box(x, (i + 1) * rise / 2, startZ + direction * i * depth, width, (i + 1) * rise, depth + 0.02, matName);
+    }
+}
+
+/** Stepped dune matching MapKit.hill so climbable rings line up with collision. */
+function duneHill(m, x, z, w, d, height, matName) {
+    const steps = Math.max(2, Math.round(height / 0.42));
+    const rise = height / steps;
+    for (let i = 0; i < steps; i++) {
+        const t = i / steps;
+        const wi = w * (1 - t * 0.72), di = d * (1 - t * 0.72);
+        m.box(x, rise * i + rise / 2, z, wi, rise, di, matName);
+    }
+}
+
+function buildDuneridge() {
+    const m = new Modeler();
+    mat('sand', 0xd9c48f, 0.98, 0);
+    mat('sand:dark', 0xc0a877, 0.96, 0);
+    mat('ripple', 0xcdb684, 0.7, 0);
+    mat('rock', 0xb08a5c, 0.95, 0);
+    mat('rock:dark', 0x8e6b45, 0.95, 0);
+    mat('stone', 0xcbb894, 0.92, 0);
+    mat('dune:east', 0xe3cd98, 1, 0);
+    mat('dune:west', 0xd2bb85, 1, 0);
+    mat('dune:south', 0xe8d6a6, 1, 0);
+    mat('metal', 0x6d7b74, 0.5, 0.7);
+    mat('metal:deck', 0x7c8983, 0.55, 0.6);
+    mat('metal:rail', 0x5c6a65, 0.5, 0.7);
+    mat('rust', 0xb5824f, 0.7, 0.35);
+    mat('rust:orange', 0xc0703f, 0.7, 0.35);
+    mat('rust:canopy', 0x8a5a3c, 0.7, 0.3);
+    mat('wood', 0x8a7a58, 0.9, 0);
+    mat('wood:ruin1', 0xc9a877, 0.8, 0);
+    mat('wood:ruin2', 0xbf9d6c, 0.8, 0);
+    mat('wood:derrick', 0xb5824f, 0.8, 0);
+    mat('foliage', 0x6f8a4e, 1, 0);
+    mat('bush', 0x9a9358, 1, 0);
+    mat('container:rust', 0xc07a4a, 0.7, 0.3);
+    mat('container:sand', 0xb08a5c, 0.65, 0.3);
+    mat('container:brown', 0x9a7a58, 0.65, 0.3);
+    mat('distant', 0xc09a70, 0.95, 0);
+    mat('distant2', 0xb08a5c, 0.95, 0);
+
+    // Ground, dry riverbed and wind ripples.
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(176, 176), mat('sand'));
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = 0;
+    m.add(floor, 'sand');
+    m.slab(0, 0.02, 0, 176, 15, 'sand:dark');
+    for (let x = -80; x <= 80; x += 8) {
+        m.slab(x, 0.026, -9 + (x % 16 === 0 ? 0 : 3), 5, 2.6, 'ripple');
+    }
+
+    // Canyon walls with a lighter coping cap.
+    m.wall(-76, 3, -28, 20, 6, 66, 'rock', 'rock:dark');
+    m.wall(-16, 4, -79, 118, 8, 20, 'rock:dark', 'rock');
+    m.wall(76, 2.5, 22, 20, 5, 96, 'rock', 'rock:dark');
+    m.wall(-6, 5, 76, 118, 10, 20, 'rock', 'rock:dark');
+    m.box(-76, 6.4, -28, 22, 0.8, 68, 'rock:dark');
+    stairsSteps(m, -76, 5.6 - (-1) * (17 - 1) * 1.2, -1, 17, 0.4, 1.2, 4, 'rock:dark');
+
+    // Dunes.
+    duneHill(m, 8, 18, 30, 24, 3.2, 'dune:east');
+    duneHill(m, -44, 36, 26, 22, 4.4, 'dune:west');
+    duneHill(m, 42, 48, 22, 18, 2.6, 'dune:south');
+
+    // Sandstone ruins platform, pillars and roof slabs.
+    m.wall(-42, 1.6, -22, 20, 3.2, 16, 'stone', 'stone');
+    stairsSteps(m, -42, -13.1 - (-1) * (8 - 1) * 1.3, -1, 8, 0.4, 1.3, 5, 'stone');
+    for (const [x, z] of [[-49, -28], [-42, -28], [-35, -28], [-49, -16], [-35, -16]]) {
+        m.box(x, 5, z, 1.2, 3.6, 1.2, 'rock:dark');
+        m.box(x, 6.75, z, 1.3, 0.25, 1.3, 'rock');
+    }
+    m.box(-42, 7.1, -28, 20, 0.6, 4, 'rock:dark');
+    m.box(-49, 7.1, -16, 6, 0.6, 4, 'rock:dark');
+    m.crateBox(-34, 3.2, -30, 1.6, 1.6, 1.6, 'wood:ruin1', 'woodtrim');
+    m.crateBox(-35.6, 3.2, -30.4, 1.3, 1.3, 1.3, 'wood:ruin2', 'woodtrim');
+    // Arch doorway.
+    m.box(-47, 2.2, -1.6, 0.7, 4.4, 1.4, 'stone');
+    m.box(-37, 2.2, -1.6, 0.7, 4.4, 1.4, 'stone');
+    m.box(-42, 4.75, -1.6, 10.7, 0.7, 1.4, 'stone');
+    m.box(-42, 5.15, -1.6, 10.9, 0.22, 1.6, 'rock');
+
+    // Drilling derrick.
+    for (const [x, z] of [[24, -36], [36, -36], [24, -24], [36, -24]]) {
+        m.box(x, 4.6, z, 1.4, 9.2, 1.4, 'metal');
+        m.box(x, 9.15, z, 1.55, 0.35, 1.55, 'metal:rail');
+    }
+    m.box(30, 9.2, -30, 14, 0.4, 14, 'metal:deck');
+    m.box(30, 9.8, -36.9, 14, 0.9, 0.18, 'metal:rail');
+    m.box(30, 9.8, -23.1, 14, 0.9, 0.18, 'metal:rail');
+    m.box(23.1, 9.8, -30, 0.18, 0.9, 14, 'metal:rail');
+    m.box(36.9, 9.8, -30, 0.18, 0.9, 14, 'metal:rail');
+    stairsSteps(m, 30, -21.9 - (-1) * (24 - 1) * 1.2, -1, 24, 0.4, 1.2, 4, 'metal');
+    m.box(30, 11.4, -36, 15, 0.5, 15, 'metal:rail');
+    m.box(26.5, 12.6, -35.4, 1.2, 3, 1.2, 'metal');
+    m.barrel(23.9, 9.6, -24.2, 'rust');
+    m.barrel(25.3, 9.6, -24.8, 'metal');
+    m.crateBox(36, 9.6, -24.8, 1.7, 1.7, 1.7, 'wood:derrick', 'woodtrim');
+
+    // Watch tower on the east shelf.
+    for (const [x, z] of [[58, 38], [66, 38], [58, 46], [66, 46]]) {
+        m.box(x, 3.2, z, 1, 6.4, 1, 'metal');
+        m.box(x, 6.35, z, 1.15, 0.3, 1.15, 'metal:rail');
+    }
+    m.box(62, 6.2, 42, 12, 0.4, 12, 'metal:deck');
+    m.box(62, 6.8, 36.1, 12, 0.8, 0.16, 'metal:rail');
+    m.box(62, 6.8, 47.9, 12, 0.8, 0.16, 'metal:rail');
+    m.box(56.1, 6.8, 42, 0.16, 0.8, 12, 'metal:rail');
+    m.box(67.9, 6.8, 42, 0.16, 0.8, 12, 'metal:rail');
+    stairsSteps(m, 62, 48.6 - (-1) * (16 - 1) * 1.2, -1, 16, 0.4, 1.2, 4, 'metal');
+    m.box(62, 8.6, 42, 13, 3.6, 0.5, 'rust:canopy');
+    m.cylinder(62, 6.6 + 1.5, 37, 0.17, 0.17, 3, 'metal', 10);
+    m.box(62, 9.75, 37, 0.9, 0.25, 0.42, 'metal:rail');
+    m.box(62, 9.55, 37, 0.34, 0.22, 0.34, 'trim');
+
+    // Ground cover, wrecks and vegetation.
+    for (const [x, z, w, h] of [[-16, 30, 4, 2.2], [18, -10, 5, 1.6], [-20, -40, 6, 2.6], [34, 10, 4.4, 1.4], [-56, 6, 5, 2.4], [52, -34, 4.6, 2]]) {
+        m.box(x, h / 2, z, w, h, w * 0.8, 'rock');
+        m.sphere(x + w * 0.25, h * 0.85, z - w * 0.18, w * 0.28, 'rock');
+    }
+    for (const [x, z] of [[-10, 62], [16, 66], [-66, -8], [70, -40], [-30, -50], [46, -60]]) {
+        m.sphere(x, 0.8, z, 1.0, 'bush');
+        m.sphere(x + 0.5, 1.15, z - 0.25, 0.7, 'bush');
+    }
+    for (const [x, z] of [[-58, -70], [66, 62], [-78, 66], [10, -64]]) m.tree(x, 0, z, 0.9);
+    m.crateBox(-6, 0, -56, 9, 2.2, 4, 'rust', 'woodtrim');
+    m.box(-6, 3, -56, 9.6, 0.3, 4.6, 'metal:rail');
+    m.crateBox(20, 0, 58, 7, 1.8, 3.2, 'rust:orange', 'woodtrim');
+    m.container(-70, 0, 30, 'container:rust', true);
+    m.container(-54, 0, 62, 'container:sand', false);
+    m.container(64, 0, -8, 'container:brown', false);
+
+    // Distant mesas.
+    for (let i = 0; i < 12; i++) {
+        const x = -120 + i * 22, h = 12 + (i % 3) * 7;
+        m.wall(x, h / 2, -118, 18, h, 16, i % 2 ? 'distant' : 'distant2', 'rock');
+    }
+
+    return m.merge();
+}
+function buildSandstorm() {
+    const m = new Modeler();
+    mat('sandstorm:ground', 0xcbb58a, .98, 0);
+    mat('sandstorm:stone', 0xb9a07b, .9, 0);
+    mat('sandstorm:plaster', 0xe5d6b6, .88, 0);
+    mat('sandstorm:shadow', 0x493f39, .82, 0);
+    mat('sandstorm:wood', 0x765b42, .72, .04);
+    mat('sandstorm:clothBlue', 0x567e83, .84, 0);
+    mat('sandstorm:clothRed', 0xaa6852, .84, 0);
+    mat('sandstorm:iron', 0x59605c, .4, .77);
+    mat('sandstorm:rust', 0x96674c, .65, .5);
+    mat('sandstorm:glass', 0x294650, .2, .4);
+    mat('sandstorm:tile', 0x9a896e, .92, 0);
+    mat('sandstorm:sea', 0x6e9b9f, .32, .05);
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(180, 180), mat('sandstorm:ground'));
+    ground.rotation.x = -Math.PI / 2;
+    m.add(ground, 'sandstorm:ground');
+    for (const z of [-46, 0, 46]) m.slab(0, .013, z, 168, 11, 'sandstorm:tile');
+    m.slab(74, .015, 0, 12, 160, 'sandstorm:tile');
+    m.slab(-82, .02, 0, 8, 170, 'sandstorm:sea');
+    for (const z of [-69, 69]) {
+        for (const [i, x] of [-47, -19, 20, 55].entries()) {
+            const body = i % 2 ? 'sandstorm:plaster' : 'sandstorm:stone';
+            m.wall(x, 4.5, z, 18, 9, 17, body, 'sandstorm:plaster');
+            m.box(x, 9.25, z, 18.7, .5, 17.7, 'sandstorm:tile');
+            for (const sx of [-7, 7]) {
+                m.box(x + sx, 10.15, z, 1.2, 1.5, 17.4, 'sandstorm:plaster');
+            }
+            const frontZ = z > 0 ? z - 8.6 : z + 8.6;
+            for (const dx of [-5.5, 0, 5.5]) {
+                m.box(x + dx, 5.6, frontZ, 2.2, 3.4, .18, 'sandstorm:shadow');
+                m.box(x + dx, 5.7, frontZ + (z > 0 ? -.11 : .11), 1.65, 2.7, .09, 'sandstorm:glass');
+                m.box(x + dx, 7.55, frontZ, 2.7, .16, .3, 'sandstorm:plaster');
+            }
+            m.box(x, 2.3, frontZ + (z > 0 ? -.1 : .1), 2.8, 4.6, .14, 'sandstorm:wood');
+            for (let k = 0; k < 5; k++)
+                m.box(x - 1.1 + k * .55, 2.4, frontZ + (z > 0 ? -.21 : .21), .07, 4.3, .08, 'sandstorm:iron');
+            // Exposed drain pipe and roof spout.
+            m.cylinder(x + 8.6, 4.2, frontZ, .1, .1, 8.4, 'sandstorm:rust', 10);
+            m.box(x + 8.6, 8.55, frontZ, .8, .18, .25, 'sandstorm:rust');
+        }
+    }
+    // High market bridge, with usable full-height passage under the deck.
+    m.box(0, 3, 0, 25, .4, 17, 'sandstorm:stone');
+    for (const x of [-11, 11]) for (const z of [-7, 7])
+        m.wall(x, 1.6, z, 1, 3.2, 1, 'sandstorm:stone', 'sandstorm:plaster');
+    for (const z of [-8.5, 8.5]) {
+        m.box(0, 4.3, z, 27, 2.2, .6, 'sandstorm:plaster');
+        for (let x = -12; x <= 12; x += 4)
+            m.box(x, 4.3, z + (z > 0 ? .35 : -.35), .18, 1.5, .15, 'sandstorm:tile');
+    }
+    for (let x = -10; x <= 10; x += 4) m.box(x, 3.35, 0, .18, .12, 17, 'sandstorm:wood');
+    // Weathered arcade windows above the market.
+    for (const x of [-8, -3, 3, 8]) {
+        m.box(x, 4.4, -8.9, 1.25, 1.2, .12, 'sandstorm:shadow');
+        m.box(x, 4.45, -8.99, .95, .83, .06, 'sandstorm:glass');
+    }
+    // Cover is aligned to gameplay AABBs; details are visual-only.
+    for (const [x, z, w, d] of [[-35, -24, 10, 2], [-35, 24, 10, 2],
+        [10, -25, 2, 10], [10, 25, 2, 10], [52, -22, 8, 2], [52, 22, 8, 2]]) {
+        m.wall(x, 1.5, z, w, 3, d, 'sandstorm:plaster', 'sandstorm:stone');
+        const alongX = w > d;
+        for (let j = -1; j <= 1; j++)
+            m.box(x + (alongX ? j * 2.2 : 0), 2.1, z + (alongX ? .04 : j * 2.2),
+                alongX ? .08 : d + .06, .08, alongX ? d + .06 : .08, 'sandstorm:tile');
+    }
+    for (const [x, z] of [[-28, -58], [-3, -55], [4, 55], [-26, 58], [54, -55], [55, 55]])
+        m.crate(x, 0, z, 2, 'sandstorm:wood', 'sandstorm:iron');
+    for (const [x, z] of [[-5, -39], [5, 39], [56, -39], [56, 39]])
+        m.barrel(x, 0, z, 'sandstorm:rust');
+    // Market fabric, poles, rope, lanterns, signage.
+    for (const z of [-35, 35]) {
+        const cloth = z < 0 ? 'sandstorm:clothBlue' : 'sandstorm:clothRed';
+        m.box(-18, 4.5, z, 18, .16, 8, cloth);
+        for (const x of [-27, -9]) {
+            m.cylinder(x, 2.35, z - 3.6, .08, .08, 4.7, 'sandstorm:wood', 8);
+            m.cylinder(x, 2.35, z + 3.6, .08, .08, 4.7, 'sandstorm:wood', 8);
+        }
+        for (let x = -25; x <= -11; x += 3.5) {
+            m.box(x, 4.25, z - 3.4, .35, .55, .25, cloth);
+            m.box(x, 4.25, z + 3.4, .35, .55, .25, cloth);
+        }
+        m.crateBox(-23, 0, z + (z > 0 ? 7 : -7), 3.3, 1.15, 1.9, 'sandstorm:wood', 'sandstorm:iron');
+    }
+    for (const [x, z] of [[-78, -78], [78, -78], [-78, 78], [78, 78], [0, -81], [0, 81]])
+        m.lamp(x, 0, z, 7, 'sandstorm:iron');
+    for (const [site, z] of [['A', -46], ['B', 46]]) {
+        m.slab(37, .025, z, 15, 15, 'sandstorm:tile');
+        for (const dx of [-8, 8]) m.box(37 + dx, .05, z, .2, .08, 16, 'sandstorm:rust');
+        for (const dz of [-8, 8]) m.box(37, .05, z + dz, 16, .08, .2, 'sandstorm:rust');
+        // Site letter is formed from durable painted bars.
+        m.box(37, .065, z, 3, .02, .24, 'sandstorm:rust');
+        m.box(37, .065, z - 1.4, .24, .02, 3, 'sandstorm:rust');
+    }
+    // Distant silhouettes remain outside the playable collision field.
+    for (let i = 0; i < 14; i++) {
+        const x = -120 + i * 19;
+        const h = 12 + (i % 4) * 5;
+        m.wall(x, h / 2, -115, 15, h, 13, i % 2 ? 'sandstorm:plaster' : 'sandstorm:stone');
+        m.wall(x, h / 2, 115, 15, h, 13, i % 2 ? 'sandstorm:stone' : 'sandstorm:plaster');
+    }
+    return m.merge();
+}
+
 function exportGltf(scene, out) {
     const exporter = new GLTFExporter();
     exporter.parse(
@@ -408,5 +667,10 @@ function exportGltf(scene, out) {
 }
 
 mkdirSync(OUT_DIR, { recursive: true });
-const scene = buildBlockyard();
-exportGltf(scene, join(OUT_DIR, 'blockyard.glb'));
+const requested = new Set(process.argv.slice(2));
+for (const [id, builder] of [['blockyard', buildBlockyard], ['duneridge', buildDuneridge], ['sandstorm', buildSandstorm]]) {
+    if (requested.size && !requested.has(id)) continue;
+    mats.clear();
+    const scene = builder();
+    exportGltf(scene, join(OUT_DIR, `${id}.glb`));
+}

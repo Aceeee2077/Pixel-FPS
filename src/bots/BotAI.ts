@@ -16,7 +16,7 @@ export class BotAI {
     jumpAt = 0;
     constructor(public bot: Bot, public nav: BotNavigation, public map: ArenaMap) { }
     reset() { this.target = null; this.path = []; this.reactAt = 0; this.routeAt = 0; this.scanAt = 0; this.lastSeen = 0; this.strafeAt = 0; this.jumpAt = 0; this.aim.set(0, 0, -1); }
-    update(dt: number, time: number, actors: Actor[], shoot: (bot: Bot, origin: THREE.Vector3, dir: THREE.Vector3) => void, difficulty = 'normal') {
+    update(dt: number, time: number, actors: Actor[], shoot: (bot: Bot, origin: THREE.Vector3, dir: THREE.Vector3) => void, difficulty = 'normal', isEnemy: (actor: Actor) => boolean = () => true, objective?: THREE.Vector3) {
         const b = this.bot;
         if (!b.alive) {
             b.state = 'Respawn';
@@ -26,7 +26,7 @@ export class BotAI {
         const eye = b.position.clone().add(new THREE.Vector3(0, b.crouched ? 1.1 : 1.55, 0));
         if (time > this.scanAt) {
             this.scanAt = time + .22 + Math.random() * .18;
-            const candidates = actors.filter(a => a.id !== b.id && a.alive && a.protectedUntil < time && a.position.distanceTo(b.position) < 65 && this.map.lineClear(eye, a.position.clone().add(new THREE.Vector3(0, 1.25, 0))));
+            const candidates = actors.filter(a => a.id !== b.id && isEnemy(a) && a.alive && a.protectedUntil < time && a.position.distanceTo(b.position) < 65 && this.map.lineClear(eye, a.position.clone().add(new THREE.Vector3(0, 1.25, 0))));
             candidates.sort((a, c) => a.position.distanceToSquared(b.position) - c.position.distanceToSquared(b.position));
             const next = candidates[0];
             if (next) {
@@ -80,7 +80,7 @@ export class BotAI {
             b.state = target ? (visible ? 'Chase' : 'Search') : 'Patrol';
             if (time > this.routeAt || !this.path.length) {
                 this.routeAt = time + 1.8 + Math.random();
-                this.path = this.nav.path(b.position, target ? this.lastPosition : this.nav.random());
+                this.path = this.nav.path(b.position, target ? this.lastPosition : objective ?? this.nav.random());
             }
             while (this.path.length && b.position.distanceTo(this.path[0]) < .85)
                 this.path.shift();

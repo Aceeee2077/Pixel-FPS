@@ -1,0 +1,51 @@
+{
+  "record": {
+    "model": "/assets/weapons/karambit/karambit.glb",
+    "preview": "/assets/weapons/karambit/preview.webp",
+    "status": "refining",
+    "category": "knife",
+    "has_reference": true,
+    "triangles": 4394,
+    "materials": 5,
+    "parts": 16,
+    "validation": {
+      "ok": true,
+      "failures": [],
+      "warnings": [
+        "sparse detail: 4394 tris < 8000 class floor"
+      ]
+    },
+    "blend": "assets-source/blender/karambit.blend"
+  },
+  "stats": {
+    "triangles": 4394,
+    "vertices": 2251,
+    "mesh_objects": 16,
+    "empty_nodes": 5,
+    "materials": [
+      "M_BrushedSteel",
+      "M_KnifeRecess",
+      "M_SkinSlot_Blade_Polished",
+      "M_SkinSlot_Grip_Charcoal",
+      "M_SkinSlot_Inlay_Gem"
+    ],
+    "parts": {
+      "Blade": 916,
+      "BladeJimping0": 23,
+      "BladeJimping1": 23,
+      "BladeJimping2": 23,
+      "BladeJimping3": 23,
+      "BladeJimping4": 23,
+      "BladeJimping5": 23,
+      "BladeJimping6": 24,
+      "BladeJimping7": 22,
+      "BladeJimping8": 22,
+      "BladeJimping9": 22,
+      "FingerRing": 686,
+      "Grip": 1206,
+      "GripPin0_Batched": 298,
+      "GripPin0SocketInner_Batched": 6,
+      "Handle": 1054
+    }
+  }
+}

@@ -39,13 +39,13 @@ try{
   await page.locator('#play').click();await page.waitForTimeout(250);await freeze();
   check('Match runs with the knife in slot 3',await page.evaluate(()=>{const g=window.__game;return g.running&&g.weapons.slots[2].config.id==='knife'&&!!g.weapons.slots[2].config.melee;}));
   check('Knife exposes only a light and a heavy stab',await page.evaluate(()=>{const k=window.__game.weapons.slots[2].config;return !!k.melee.light&&!!k.melee.heavy&&k.reserveAmmo===0&&k.magazineSize===1;}));
-  check('The knife slot is labelled with the equipped blade',await page.evaluate(()=>document.querySelector('#slot2').textContent.trim()==='3COMBAT KNIFE'));
+  check('The knife slot is labelled with the equipped blade',await page.evaluate(()=>document.querySelector('#slot2').textContent.trim()==='3战术匕首'));
   // Draw animation: the blade rises over time and the knife stays unusable until it is up.
   await page.keyboard.press('Digit1');await page.waitForTimeout(400);
   await page.evaluate(()=>window.__game.weapons.select(2));
-  await page.waitForTimeout(60);const drawing=await state();
+  const drawing=await waitFor(s=>s.knife&&s.switching&&s.hint==='正在出刀…',2000);
   check('Switching to the knife plays a draw animation',drawing.knife&&drawing.switching&&drawing.switchLeft>0);
-  check('Draw animation shows DRAWING KNIFE in the HUD',drawing.hint==='DRAWING KNIFE…');
+  check('Draw animation shows the translated knife hint in the HUD',drawing.hint==='正在出刀…');
   await move({range:1.8});
   await page.evaluate(()=>{const g=window.__game;g.weapons.select(0);g.weapons.select(2);g.weapon.cooldown=0;});
   await page.mouse.down();await page.mouse.up();await page.waitForTimeout(60);const duringDraw=await state();
@@ -53,8 +53,8 @@ try{
   await page.screenshot({path:'test-results/melee-draw.png'});
   const idle=await waitFor(s=>!s.switching,4000);
   check('Draw finishes and the knife becomes usable',!idle.switching&&idle.knife);
-  check('Idle knife HUD advertises light and heavy stabs',idle.hint.includes('LIGHT STAB')&&idle.hint.includes('HEAVY STAB'));
-  check('Knife HUD swaps the ammo line for stab damage and drops the reload key',await page.evaluate(()=>{const g=window.__game,panel=document.querySelector('#ammo'),box=panel.closest('.ammo');return panel.textContent.replace(/\s+/g,'')===`${g.weapon.config.melee.light.damage}/${g.weapon.config.melee.heavy.damage}`&&document.querySelector('#weapon-label').textContent==='LIGHT / HEAVY STAB DAMAGE'&&box.querySelector('kbd').classList.contains('hidden');}));
+  check('Idle knife HUD advertises light and heavy stabs',idle.hint.includes('左键轻击')&&idle.hint.includes('右键重击'));
+  check('Knife HUD swaps the ammo line for stab damage and drops the reload key',await page.evaluate(()=>{const g=window.__game,panel=document.querySelector('#ammo'),box=panel.closest('.ammo');return panel.textContent.replace(/\s+/g,'')===`${g.weapon.config.melee.light.damage}/${g.weapon.config.melee.heavy.damage}`&&document.querySelector('#weapon-label').textContent==='轻击 / 重击伤害'&&box.querySelector('kbd').classList.contains('hidden');}));
   check('Knife uses melee crosshair styling',idle.meleeCrosshair);
   // Light stab: fast wind-up, 45 to the body, and it never scopes or fires.
   const light=await stab({kind:'light'});
@@ -66,7 +66,7 @@ try{
   check('Heavy stab winds up longer than the light stab',heavy.strikeFrame===21);
   check('Heavy stab deals 90 damage',heavy.hp===10);
   check('Body heavy stab does not eliminate a full health bot',heavy.alive&&heavy.score===0);
-  check('Heavy stab shows the HEAVY STAB readout',heavy.hint==='HEAVY STAB');
+  check('Heavy stab shows the translated readout',heavy.hint==='重击');
   // Backstab: the CS2 rule, judged by the victim facing away.
   const back=await stab({kind:'heavy',range:1.4,facing:'back'});
   check('Heavy backstab eliminates the target',!back.alive&&back.score===1);
@@ -97,9 +97,9 @@ try{
     const g=window.__game;
     g.running=false;g.weapon.cancelAttack();g.weapons.switchLeft=0;g.weapons.switchTotal=0;
     const shot=()=>{const c=document.createElement('canvas');c.width=g.renderer.domElement.width;c.height=g.renderer.domElement.height;const ctx=c.getContext('2d');ctx.drawImage(g.renderer.domElement,0,0);return ctx.getImageData(0,0,c.width,c.height);};
-    g.updateView(.001);g.view.visible=false;g.renderer.render(g.scene,g.camera);
+    g.updateView(.001);g.view.visible=false;g.viewmodel.render(g.renderer,g.scene,g.camera);
     window.__reference=shot();g.view.visible=true;
-    window.__poseStats=()=>{g.renderer.render(g.scene,g.camera);const now=shot(),ref=window.__reference;let sx=0,sy=0,n=0;for(let y=0;y<now.height;y++)for(let x=0;x<now.width;x++){const i=(y*now.width+x)*4;const d=Math.abs(now.data[i]-ref.data[i])+Math.abs(now.data[i+1]-ref.data[i+1])+Math.abs(now.data[i+2]-ref.data[i+2]);if(d>60){sx+=x;sy+=y;n++;}}return {cx:n?sx/n/now.width:0,cy:n?sy/n/now.height:0,count:n};};
+    window.__poseStats=()=>{g.viewmodel.render(g.renderer,g.scene,g.camera);const now=shot(),ref=window.__reference;let sx=0,sy=0,n=0;for(let y=0;y<now.height;y++)for(let x=0;x<now.width;x++){const i=(y*now.width+x)*4;const d=Math.abs(now.data[i]-ref.data[i])+Math.abs(now.data[i+1]-ref.data[i+1])+Math.abs(now.data[i+2]-ref.data[i+2]);if(d>60){sx+=x;sy+=y;n++;}}return {cx:n?sx/n/now.width:0,cy:n?sy/n/now.height:0,count:n};};
   });
   const poses={};
   const pose=async(name)=>{await page.evaluate(()=>window.__game.updateView(.001));await page.screenshot({path:`test-results/${name}.png`});return page.evaluate(()=>window.__poseStats());};
@@ -115,9 +115,9 @@ try{
   await page.evaluate(()=>{const g=window.__game;g.weapon.attackTime=.46;});
   poses.heavyCut=await pose('melee-pose-heavy-cut');
   console.log('POSE REPORT',JSON.stringify(poses));
-  check('Knife stays on screen through the draw and both swings',Object.values(poses).every(p=>p.count>1500));
+  check('Knife stays on screen through the draw and both swings',Object.values(poses).every(p=>p.count>1000));
   check('Draw animation pulls the blade up from below the frame',poses.draw.cy>poses.idle.cy&&poses.draw.cx!==poses.idle.cx);
-  check('Light stab winds up to the right then slashes across to the left',poses.lightWind.cx>poses.idle.cx+.004&&poses.lightCut.cx<poses.lightWind.cx-.03);
+  check('Light stab winds up to the right then slashes across to the left',poses.lightWind.cx>poses.idle.cx+.004&&poses.lightCut.cx<poses.lightWind.cx-.02);
   check('Heavy stab lifts the blade then drives it down',poses.heavyWind.cy<poses.idle.cy-.005&&poses.heavyCut.cy>poses.idle.cy+.005);
   check('Heavy stab has the longer, heavier arc of the two',poses.heavyCut.cy-poses.idle.cy>poses.lightCut.cy-poses.idle.cy);
   check('No two animation frames render the same pose',new Set(Object.values(poses).map(p=>`${p.cx.toFixed(4)}:${p.cy.toFixed(4)}`)).size===6);

@@ -1,3 +1,4 @@
+import { getWeapon } from '../data/weapons';
 import type { WeaponId } from '../weapons/WeaponConfig';
 
 export type Firearm = Exclude<WeaponId, 'knife'>;
@@ -40,8 +41,9 @@ function finish(samples: Float32Array, rate: number, peak = .92) {
 }
 
 export function gunSamples(id: Firearm, rate: number, variant = 0): Float32Array {
-    const p = GUN_SOUND[id], out = new Float32Array(Math.ceil(rate * p.length));
-    const index = Object.keys(GUN_SOUND).indexOf(id);
+    const soundId = getWeapon(id)?.modelFamily ?? id;
+    const p = GUN_SOUND[soundId] ?? GUN_SOUND.rifle, out = new Float32Array(Math.ceil(rate * p.length));
+    const index = Object.keys(GUN_SOUND).indexOf(soundId);
     const noise = random(0x6d2b79f5 ^ ((index + 1) * 1234567) ^ ((variant + 1) * 98761));
     const air = lowpass(p.crack, rate), body = bandpass(p.body * 2.7, .65, rate), bark = bandpass(1100 + index * 133, .8, rate);
     const rumble = lowpass(410, rate), bright = bandpass(3600 + index * 240, 1.7, rate), distant = lowpass(1250, rate);
@@ -57,12 +59,12 @@ export function gunSamples(id: Firearm, rate: number, variant = 0): Float32Array
         const report = (body(n) * 1.55 + bark(n) * .78) * Math.exp(-t / (p.decay * .9));
         const gas = distant(n) * .55 * Math.exp(-t / p.tail) * (1 - Math.exp(-t / .007));
         const boltT = t - p.action;
-        const mechanism = boltT >= 0 ? bright(n) * Math.exp(-boltT / .009) * (id === 'sniper' || id === 'shotgun' ? .33 : .19) : 0;
+        const mechanism = boltT >= 0 ? bright(n) * Math.exp(-boltT / .009) * (soundId === 'sniper' || soundId === 'shotgun' ? .33 : .19) : 0;
         out[i] = attack * (pressure * .72 + crack + report + gas) + mechanism;
     }
     // Quiet early reflections add scale without smearing automatic fire into continuous hiss.
     const dry = out.slice();
-    const heavy = id === 'sniper' || id === 'shotgun';
+    const heavy = soundId === 'sniper' || soundId === 'shotgun';
     for (const [seconds, gain] of [[.027, .11], [.061, .06], [.113, heavy ? .065 : .023]]) {
         const offset = Math.round(seconds * rate), filter = lowpass(1900, rate);
         for (let i = offset; i < out.length; i++) out[i] += filter(dry[i - offset]) * gain;

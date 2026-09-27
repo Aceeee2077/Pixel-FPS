@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import type { WeaponId } from './WeaponConfig';
+import { getWeapon } from '../data/weapons';
 import { appearanceKey, DEFAULT_APPEARANCE, type WeaponAppearance, type KnifeStyle } from './WeaponAppearance';
 
 // Silhouettes use (forward, height); the finished model points down local -Z.
@@ -293,16 +294,170 @@ function bake(group: THREE.Group) {
     });
     originals.forEach(geometry=>geometry.dispose());return group;
 }
+/** Reference-calibrated temporary geometry for weapons with supplied PNGs.
+ * These are real beveled/extruded meshes with thickness, never image planes.
+ * TODO_FINAL_MODEL: replace each family with an authored GLB when available.
+ */
+function referenceGun(g: THREE.Group, id: WeaponId, appearance: WeaponAppearance): boolean {
+    const definition = getWeapon(id);
+    if (!definition?.previewImage || definition.category === 'melee') return false;
+    const metal = material(0x343636, 'metal'), edge = material(0x17191a, 'metal');
+    const gripMat = material(0x292a29, 'rubber');
+    const wood = material(0x855331), woodDark = material(0x5c3926);
+    const olive = material(0x747365), grey = material(0x696e6d);
+    const family = definition.modelFamily;
+    if (family === 'rifle') {
+        const ak = id === 'ak-47', bullpup = id === 'aug' || id === 'famas', pale = id === 'aug';
+        const body = pale ? olive : id === 'm4a4' || id === 'm4a1-s' ? grey : metal;
+        if (bullpup) {
+            profile(g, [[-.62,.07],[.31,.07],[.55,-.04],[.42,-.16],[.03,-.16],[-.09,-.34],[-.31,-.34],[-.38,-.16],[-.62,-.15]], .15, body);
+            profile(g, [[-.15,-.09],[.13,-.09],[.13,-.15],[.03,-.15],[-.02,-.28],[-.18,-.27]], .018, edge, -.084);
+            grip(g, .28, -.14, gripMat);
+            profile(g, [[-.41,-.13],[-.28,-.13],[-.22,-.47],[-.36,-.47]], .095, edge);
+            box(g, edge, 0, -.09, -.63, .18, .17, .1);
+            barrel(g, edge, -.055, .82, .029, .62);
+            barrel(g, metal, -.055, 1.11, .036, .055);
+            profile(g, [[-.21,.1],[-.13,.23],[.19,.23],[.34,.09]], .045, edge);
+            if (id === 'aug') {
+                barrel(g, edge, .245, -.03, .039, .55);
+                box(g, edge, 0, .22, -.32, .055, .09, .08);
+            } else {
+                box(g, edge, 0, .22, -.02, .045, .04, .56);
+                sight(g, .85, .09, true);
+            }
+            g.userData.muzzle = [0,-.055,-1.14];
+        } else {
+            const receiver = ak ? metal : body;
+            profile(g, [[-.22,.06],[.39,.06],[.44,-.025],[.32,-.14],[-.2,-.14]], .145, receiver);
+            profile(g, [[-.18,.035],[.31,.035],[.31,-.06],[-.17,-.07]], .009, ak ? metal : grey, -.08);
+            box(g, edge, 0, -.025, .2, .016, .028, .21);
+            barrel(g, edge, -.03, .84, .029, .75);
+            if (id === 'm4a1-s') barrel(g, edge, -.03, 1.25, .045, .34);
+            else barrel(g, metal, -.03, 1.2, .04, .07);
+            const handguard = ak ? wood : id === 'galil-ar' ? grey : metal;
+            profile(g, [[.39,.065],[.84,.055],[.88,-.04],[.78,-.14],[.4,-.14]], .14, handguard);
+            for (const x of [-.076,.076]) for (let i=0;i<5;i++)
+                box(g, ak ? woodDark : edge, x, -.013, .48+i*.067, .006, .016, .044);
+            if (ak) {
+                profile(g, [[-.55,.035],[-.21,.02],[-.21,-.11],[-.48,-.19],[-.67,-.16],[-.67,-.02]], .115, wood);
+                profile(g, [[.06,-.14],[.25,-.14],[.34,-.26],[.29,-.48],[.19,-.55],[.08,-.5],[.17,-.36]], .085, metal);
+                box(g, wood, 0, -.2, -.03, .088, .23, .09);
+                sight(g, .84, .09, true);
+            } else {
+                barrel(g, edge, -.07, -.36, .03, .25);
+                box(g, edge, 0, -.07, -.55, .16, .24, .16);
+                profile(g, [[.08,-.14],[.27,-.14],[.33,-.47],[.21,-.48]], .08, grey);
+                grip(g, -.07, -.14, gripMat);
+                if (id === 'm4a4' || id === 'm4a1-s') {
+                    profile(g, [[-.07,.08],[.02,.2],[.3,.2],[.39,.08]], .024, edge);
+                    box(g, metal, 0, .095, .58, .12, .025, .38);
+                } else rail(g, .4, .09, .75);
+                sight(g, .84, .09, true);
+            }
+            g.userData.muzzle = [0,-.03,id === 'm4a1-s' ? -1.42 : -1.24];
+        }
+        trigger(g, .02, -.13);
+        for (const x of [-.078,.078]) pin(g, x, -.085, .11, .009, metal);
+        return true;
+    }
+    if (family === 'smg') {
+        const p90 = id === 'p90', bizon = id === 'pp-bizon', compact = id === 'mac-10' || id === 'mp9';
+        if (p90) {
+            profile(g, [[-.46,.09],[.38,.09],[.59,-.025],[.4,-.21],[.17,-.22],[.1,-.1],[-.04,-.12],[-.19,-.33],[-.45,-.3]], .17, edge);
+            profile(g, [[-.32,-.14],[-.14,-.14],[-.08,-.27],[-.28,-.27]], .02, metal, -.092);
+            box(g, metal, 0, .14, -.01, .13, .075, .9);
+            barrel(g, edge, -.075, .59, .035, .14);
+            g.userData.muzzle=[0,-.075,-.67];
+        } else {
+            const bodyEnd = compact ? .44 : .59;
+            profile(g, [[-.3,.09],[bodyEnd,.09],[bodyEnd,-.11],[.22,-.18],[-.29,-.16]], .145, metal);
+            profile(g, [[-.23,.06],[bodyEnd-.04,.06],[bodyEnd-.06,-.07],[-.23,-.09]], .011, grey, -.08);
+            for (let i=0;i<6;i++) box(g, edge, -.083, .01, .03+i*.057, .008, .02, .027);
+            barrel(g, edge, -.025, bodyEnd+.12, .031, .25);
+            if (id === 'mp7') barrel(g, edge, -.025, bodyEnd+.31, .043, .18);
+            if (id === 'mac-10') {
+                profile(g, [[-.3,.075],[-.43,.075],[-.5,-.12],[-.3,-.12]], .09, edge);
+                box(g, edge, 0, -.16, -.05, .08, .25, .09);
+            } else {
+                barrel(g, edge, -.055, -.52, .018, .44);
+                box(g, edge, 0, -.06, -.72, .1, .13, .04);
+            }
+            grip(g, -.13, -.17, gripMat);
+            if (bizon) {
+                barrel(g, grey, -.24, .25, .065, .65);
+                box(g, edge, 0, -.25, .25, .1, .06, .64);
+            } else {
+                profile(g, [[.13,-.16],[.24,-.16],[.25,-.5],[.14,-.5]], .085, edge);
+                if (id === 'mp9' || id === 'mac-10') grip(g, .3, -.17, gripMat);
+            }
+            g.userData.muzzle=[0,-.025,-(bodyEnd+.37)];
+        }
+        sight(g, .32, .11, true);
+        trigger(g, -.04, -.12);
+        return true;
+    }
+    if (family === 'pistol') {
+        const heavy = id === 'deagle', slim = id === 'glock' || id === 'usp-s';
+        const slide = appearance.pistolSkin === 'copper' ? material(0xb07848, 'metal') : heavy ? grey : slim ? edge : metal;
+        const end = heavy ? .57 : id === 'tec-9' ? .6 : .47;
+        profile(g, [[-.24,.08],[end,.08],[end,-.055],[end-.05,-.12],[-.22,-.12]], .12, slide);
+        profile(g, [[-.22,.05],[end-.04,.05],[end-.04,-.035],[-.21,-.04]], .009, heavy ? metal : grey, -.067);
+        for(let i=0;i<5;i++) box(g, edge, -.067, .006, -.13+i*.021, .006, .08, .008);
+        profile(g, [[-.12,-.1],[.15,-.1],[.12,-.38],[-.02,-.51],[-.14,-.48]], .1, gripMat);
+        box(g, edge, 0, -.47, -.03, .11, .035, .15);
+        trigger(g, .15, -.11);
+        barrel(g, edge, -.02, end+.025, .034, .09);
+        if(id==='usp-s') barrel(g, edge, -.02, end+.27, .045, .4);
+        if(heavy) {
+            barrel(g, metal, -.025, .35, .047, .32);
+            box(g, metal, 0, -.14, .31, .14, .06, .18);
+        }
+        if(id==='cz75') box(g, metal, 0, .115, .1, .1, .09, .23);
+        if(id==='tec-9') barrel(g, edge, -.02, end+.25, .03, .45);
+        sight(g, -.18, .105);
+        sight(g, end-.02, .105, true);
+        g.userData.muzzle=[0,-.02,-(id==='usp-s' ? end+.47 : end+.08)];
+        return true;
+    }
+    if (family === 'sniper') {
+        const stock = id === 'awp' ? olive : metal;
+        profile(g, [[-.72,-.08],[-.43,.02],[.14,.02],[.49,-.075],[.37,-.2],[-.08,-.22],[-.28,-.32],[-.68,-.28]], .14, stock);
+        box(g, gripMat, 0, -.19, -.75, .16, .24, .06);
+        barrel(g, edge, -.03, .76, .043, .8);
+        barrel(g, metal, -.03, 1.31, .024, .48);
+        barrel(g, edge, .21, .02, .085, .63);
+        for(const u of [-.17,.26]) box(g, edge, 0, .11, u, .06, .19, .06);
+        profile(g, [[.05,-.19],[.22,-.19],[.28,-.41],[.09,-.4]], .08, edge);
+        grip(g, -.22, -.17, gripMat);
+        trigger(g, -.03, -.17);
+        g.userData.muzzle=[0,-.03,-1.55];
+        return true;
+    }
+    return false;
+}
+
 export function weaponModel(id: WeaponId, view=false, appearance: WeaponAppearance=DEFAULT_APPEARANCE) {
     const key=appearanceKey(id,appearance)+(view?':hands':':display');
     if(!models.has(key)) {
         const g=new THREE.Group();
-        if(id==='rifle')rifle(g,appearance.rifleSkin==='asimov');
-        else if(id==='smg')smg(g);else if(id==='sniper')sniper(g);else if(id==='pistol')pistol(g);
-        else if(id==='knife')knife(g,appearance.knifeStyle);else shotgun(g);
-        if(view)hands(g,id);
+        const family = getWeapon(id)?.modelFamily ?? (id as 'rifle' | 'smg' | 'sniper' | 'pistol' | 'knife' | 'shotgun');
+        if(referenceGun(g,id,appearance)) { /* authored temporary silhouette above */ }
+        else if(family==='rifle')rifle(g,appearance.rifleSkin==='asimov' && (id==='rifle' || id==='m4a4'));
+        else if(family==='smg')smg(g);else if(family==='sniper')sniper(g);else if(family==='pistol')pistol(g);
+        else if(family==='knife')knife(g,id==='butterfly'?'butterfly-emerald':id==='karambit'?'karambit-emerald':id==='m9'?'m9-ruby':appearance.knifeStyle);else shotgun(g);
+        if(view)hands(g,family);
         g.userData.appearance=appearanceKey(id,appearance);g.userData.weapon=id;
         models.set(key,bake(g));
     }
     return models.get(key)!.clone();
+}
+
+let cachedKnifeHands: THREE.Group | undefined;
+export function weaponHands() {
+    if (!cachedKnifeHands) {
+        cachedKnifeHands = new THREE.Group();
+        hands(cachedKnifeHands, 'knife');
+        bake(cachedKnifeHands);
+    }
+    return cachedKnifeHands.clone();
 }

@@ -28,7 +28,7 @@ export class InputManager {
         canvas.tabIndex = -1;
         window.addEventListener('keydown', e => {
             if (!this.active || (e.target as HTMLElement)?.matches('input,select,textarea')) return;
-            if (['Tab', 'Space', 'ControlLeft', 'ControlRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyR', 'Digit1', 'Digit2', 'Digit3', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
+            if (['Tab', 'Space', 'ControlLeft', 'ControlRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyR', 'Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8', 'Enter', 'KeyB', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
             if (!this.keys.has(e.code)) this.pressed.add(e.code);
             this.keys.add(e.code);
         });

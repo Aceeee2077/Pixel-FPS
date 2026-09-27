@@ -10,6 +10,9 @@ export class Player {
     grounded = true;
     crouched = false;
     hp = 100;
+    armor = 0;
+    helmet = false;
+    hasDefuseKit = false;
     alive = true;
     kills = 0;
     deaths = 0;

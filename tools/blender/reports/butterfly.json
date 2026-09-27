@@ -1,0 +1,71 @@
+{
+  "record": {
+    "model": "/assets/weapons/butterfly/butterfly.glb",
+    "preview": "/assets/weapons/butterfly/preview.webp",
+    "status": "refining",
+    "category": "knife",
+    "has_reference": true,
+    "triangles": 4274,
+    "materials": 5,
+    "parts": 36,
+    "validation": {
+      "ok": true,
+      "failures": [],
+      "warnings": [
+        "sparse detail: 4274 tris < 8000 class floor"
+      ]
+    },
+    "blend": "assets-source/blender/butterfly.blend"
+  },
+  "stats": {
+    "triangles": 4274,
+    "vertices": 2217,
+    "mesh_objects": 36,
+    "empty_nodes": 8,
+    "materials": [
+      "M_BrushedSteel",
+      "M_KnifeRecess",
+      "M_SkinSlot_Blade_Polished",
+      "M_SkinSlot_Grip_Charcoal",
+      "M_SkinSlot_Inlay_Gem"
+    ],
+    "parts": {
+      "Blade": 520,
+      "BladeJimping0": 18,
+      "BladeJimping1": 18,
+      "BladeJimping2": 18,
+      "BladeJimping3": 18,
+      "BladeJimping4": 18,
+      "BladeJimping5": 18,
+      "Latch": 138,
+      "LatchHead": 98,
+      "HandleLeft": 872,
+      "InlayLeft": 320,
+      "PivotBossLeft": 76,
+      "PivotScrewLeft": 78,
+      "PivotScrewLeftSocketInner": 2,
+      "PivotScrewLeftSocketOuter": 2,
+      "ScrewLeft0": 94,
+      "ScrewLeft0SocketInner": 2,
+      "ScrewLeft0SocketOuter": 2,
+      "ScrewLeft1": 94,
+      "ScrewLeft1SocketInner": 2,
+      "ScrewLeft1SocketOuter": 2,
+      "HandleRight": 872,
+      "InlayRight": 320,
+      "PivotBossRight": 76,
+      "PivotScrewRight": 78,
+      "PivotScrewRightSocketInner": 2,
+      "PivotScrewRightSocketOuter": 2,
+      "ScrewRight0": 94,
+      "ScrewRight0SocketInner": 2,
+      "ScrewRight0SocketOuter": 2,
+      "ScrewRight1": 94,
+      "ScrewRight1SocketInner": 2,
+      "ScrewRight1SocketOuter": 2,
+      "LatchPin": 78,
+      "LatchSpring": 44,
+      "PivotWasherLeft_Batched": 196
+    }
+  }
+}

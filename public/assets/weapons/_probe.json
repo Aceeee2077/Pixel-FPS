@@ -1,0 +1,3 @@
+{
+  "_comment": "Placeholder removed. The runtime manifest is written into public/assets/weapons/ by `npm run publish:weapons` (tools/blender/publish_assets.mjs)."
+}

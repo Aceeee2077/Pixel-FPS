@@ -1,0 +1,64 @@
+{
+  "record": {
+    "model": "/assets/weapons/ssg08/ssg08.glb",
+    "preview": "/assets/weapons/ssg08/preview.webp",
+    "status": "refining",
+    "category": "sniper",
+    "has_reference": true,
+    "triangles": 5966,
+    "materials": 7,
+    "parts": 20,
+    "validation": {
+      "ok": true,
+      "failures": [],
+      "warnings": [
+        "sparse detail: 5966 tris < 14000 class floor",
+        "BoltBody has no UV layer",
+        "BoltHandleArm has no UV layer",
+        "BoltHandleKnob has no UV layer",
+        "BoltKnob has no UV layer",
+        "BoltShroud has no UV layer",
+        "ButtPad has no UV layer",
+        "MagazineBody has no UV layer"
+      ]
+    },
+    "blend": "assets-source/blender/ssg08.blend"
+  },
+  "stats": {
+    "triangles": 5966,
+    "vertices": 2904,
+    "mesh_objects": 20,
+    "empty_nodes": 10,
+    "materials": [
+      "M_BlackAnodized",
+      "M_BrushedSteel",
+      "M_Gunmetal",
+      "M_PhosphateSteel",
+      "M_PolymerBlack",
+      "M_Rubber",
+      "M_ScopeGlass"
+    ],
+    "parts": {
+      "Action_Batched": 316,
+      "ActionScrew0_Batched": 208,
+      "Barrel_Batched": 1708,
+      "BoltBody": 124,
+      "BoltHandleArm": 18,
+      "BoltHandleKnob": 20,
+      "BoltKnob": 98,
+      "BoltShroud": 90,
+      "BrakeSlot0_Batched": 791,
+      "ButtPad": 44,
+      "CheekRiser_Batched": 188,
+      "MagazineBody": 70,
+      "MagazineCatch": 44,
+      "MagazineFloor": 78,
+      "MagazineSpine": 78,
+      "MagazineWell": 76,
+      "ScopeObjectiveGlass_Batched": 56,
+      "Stock": 1821,
+      "TriggerAssemblyBlade": 76,
+      "TriggerAssemblyGuard": 62
+    }
+  }
+}

@@ -1,0 +1,402 @@
+[
+  {
+    "weapon": "ak-47",
+    "file": "AK-47.png",
+    "source": [
+      1254,
+      1254
+    ],
+    "bounds_tight": [
+      18,
+      340,
+      1240,
+      982
+    ],
+    "band_px": 642,
+    "band_share": 0.512
+  },
+  {
+    "weapon": "m4a4",
+    "file": "M4A4.png",
+    "source": [
+      1254,
+      1254
+    ],
+    "bounds_tight": [
+      24,
+      290,
+      1042,
+      974
+    ],
+    "band_px": 684,
+    "band_share": 0.5455
+  },
+  {
+    "weapon": "m4a4",
+    "file": "M4A4_Asimov.png",
+    "source": [
+      1254,
+      1254
+    ],
+    "bounds_tight": [
+      18,
+      270,
+      1060,
+      962
+    ],
+    "band_px": 692,
+    "band_share": 0.5518
+  },
+  {
+    "weapon": "m4a1-s",
+    "file": "M4A1-S.png",
+    "source": [
+      1254,
+      1254
+    ],
+    "bounds_tight": [
+      20,
+      160,
+      1230,
+      880
+    ],
+    "band_px": 720,
+    "band_share": 0.5742
+  },
+  {
+    "weapon": "awp",
+    "file": "AWP.png",
+    "source": [
+      1254,
+      1254
+    ],
+    "bounds_tight": [
+      14,
+      134,
+      1248,
+      878
+    ],
+    "band_px": 744,
+    "band_share": 0.5933
+  },
+  {
+    "weapon": "glock",
+    "file": "Glock.png",
+    "source": [
+      1254,
+      1254
+    ],
+    "bounds_tight": [
+      68,
+      190,
+      1200,
+      1156
+    ],
+    "band_px": 966,
+    "band_share": 0.7703
+  },
+  {
+    "weapon": "usp-s",
+    "file": "usp.png",
+    "source": [
+      1254,
+      1254
+    ],
+    "bounds_tight": [
+      18,
+      240,
+      1212,
+      1096
+    ],
+    "band_px": 856,
+    "band_share": 0.6826
+  },
+  {
+    "weapon": "deagle",
+    "file": "Deagle.png",
+    "source": [
+      1254,
+      1254
+    ],
+    "bounds_tight": [
+      44,
+      204,
+      1216,
+      1108
+    ],
+    "band_px": 904,
+    "band_share": 0.7209
+  },
+  {
+    "weapon": "famas",
+    "file": "FAMAS.png",
+    "source": [
+      1254,
+      1254
+    ],
+    "bounds_tight": [
+      4,
+      112,
+      1234,
+      978
+    ],
+    "band_px": 866,
+    "band_share": 0.6906
+  },
+  {
+    "weapon": "aug",
+    "file": "AUG.png",
+    "source": [
+      1254,
+      1254
+    ],
+    "bounds_tight": [
+      18,
+      160,
+      1230,
+      920
+    ],
+    "band_px": 760,
+    "band_share": 0.6061
+  },
+  {
+    "weapon": "p2000",
+    "file": "P2000.png",
+    "source": [
+      1254,
+      1254
+    ],
+    "bounds_tight": [
+      22,
+      242,
+      1178,
+      1180
+    ],
+    "band_px": 938,
+    "band_share": 0.748
+  },
+  {
+    "weapon": "p250",
+    "file": "P250.png",
+    "source": [
+      1254,
+      1254
+    ],
+    "bounds_tight": [
+      66,
+      164,
+      1248,
+      1114
+    ],
+    "band_px": 950,
+    "band_share": 0.7576
+  },
+  {
+    "weapon": "five-seven",
+    "file": "FN57.png",
+    "source": [
+      1254,
+      1254
+    ],
+    "bounds_tight": [
+      84,
+      254,
+      1150,
+      1166
+    ],
+    "band_px": 912,
+    "band_share": 0.7273
+  },
+  {
+    "weapon": "tec-9",
+    "file": "TEC-9.png",
+    "source": [
+      1254,
+      1254
+    ],
+    "bounds_tight": [
+      60,
+      164,
+      1134,
+      1108
+    ],
+    "band_px": 944,
+    "band_share": 0.7528
+  },
+  {
+    "weapon": "cz75",
+    "file": "CZ75.png",
+    "source": [
+      1254,
+      1254
+    ],
+    "bounds_tight": [
+      76,
+      112,
+      1160,
+      1132
+    ],
+    "band_px": 1020,
+    "band_share": 0.8134
+  },
+  {
+    "weapon": "mp9",
+    "file": "MP9.png",
+    "source": [
+      1254,
+      1254
+    ],
+    "bounds_tight": [
+      4,
+      182,
+      1236,
+      1114
+    ],
+    "band_px": 932,
+    "band_share": 0.7432
+  },
+  {
+    "weapon": "mac-10",
+    "file": "MAC-10.png",
+    "source": [
+      1254,
+      1254
+    ],
+    "bounds_tight": [
+      66,
+      102,
+      1190,
+      1248
+    ],
+    "band_px": 1146,
+    "band_share": 0.9139
+  },
+  {
+    "weapon": "mp7",
+    "file": "MP7.png",
+    "source": [
+      1254,
+      1254
+    ],
+    "bounds_tight": [
+      30,
+      238,
+      1218,
+      1080
+    ],
+    "band_px": 842,
+    "band_share": 0.6715
+  },
+  {
+    "weapon": "pp-bizon",
+    "file": "PP19.png",
+    "source": [
+      1254,
+      1254
+    ],
+    "bounds_tight": [
+      24,
+      336,
+      1232,
+      890
+    ],
+    "band_px": 554,
+    "band_share": 0.4418
+  },
+  {
+    "weapon": "p90",
+    "file": "P90.png",
+    "source": [
+      1254,
+      1254
+    ],
+    "bounds_tight": [
+      36,
+      168,
+      1214,
+      982
+    ],
+    "band_px": 814,
+    "band_share": 0.6491
+  },
+  {
+    "weapon": "knife",
+    "file": "Knife.png",
+    "source": [
+      1254,
+      1254
+    ],
+    "bounds_tight": [
+      56,
+      62,
+      1220,
+      1216
+    ],
+    "band_px": 1154,
+    "band_share": 0.9203
+  },
+  {
+    "weapon": "butterfly",
+    "file": "Butterfly_Knife_Emerald.png",
+    "source": [
+      1254,
+      1254
+    ],
+    "bounds_tight": [
+      56,
+      88,
+      1204,
+      1178
+    ],
+    "band_px": 1090,
+    "band_share": 0.8692
+  },
+  {
+    "weapon": "butterfly",
+    "file": "Butterfly_Knife_Fade.png",
+    "source": [
+      1254,
+      1254
+    ],
+    "bounds_tight": [
+      40,
+      80,
+      1214,
+      1156
+    ],
+    "band_px": 1076,
+    "band_share": 0.8581
+  },
+  {
+    "weapon": "karambit",
+    "file": "Karambit_Emerald.png",
+    "source": [
+      1254,
+      1254
+    ],
+    "bounds_tight": [
+      20,
+      150,
+      1248,
+      1104
+    ],
+    "band_px": 954,
+    "band_share": 0.7608
+  },
+  {
+    "weapon": "m9",
+    "file": "M9Bayonet_Ruby.png",
+    "source": [
+      1254,
+      1254
+    ],
+    "bounds_tight": [
+      36,
+      94,
+      1238,
+      1180
+    ],
+    "band_px": 1086,
+    "band_share": 0.866
+  }
+]

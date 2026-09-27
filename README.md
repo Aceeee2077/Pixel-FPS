@@ -116,6 +116,27 @@ npm run preview
 
 等级会解锁涂装：M4A4 ASIMOV 需要步枪 LV 2，蝴蝶刀渐变 / M9 红宝石 / 蝴蝶刀绿宝石 / 爪子刀绿宝石 分别需要匕首 LV 1 / 3 / 5 / 7，没解锁的外观在武器库里显示为锁定。等级与地图选择都保存在本地。
 
+## 武器模型
+
+全部 29 把武器的 GLB 都是本项目**从零建模**的：参考图只用于校准轮廓、比例与配色分区，没有任何 Valve / CS2 原始模型、Source 2 网格或第三方游戏资产被下载或提取，也没有把参考 PNG 贴在平面上充当模型。
+
+```bash
+npm run build:references   # 扫描参考图，重建 tools/blender/reference_manifest.json
+npm run build:weapons      # 建模 -> 校验 -> 渲染 -> 轮廓比对 -> 导出 GLB
+npm run publish:weapons    # 把 GLB 与清单发布到 public/，并生成武器注册表
+npm run verify             # 发布 + 构建 + 全部测试
+```
+
+单把武器：
+
+```bash
+npm run build:weapon -- --weapon ak-47
+```
+
+Blender 会自动探测（`BLENDER_PATH` → `PATH` → `C:\Program Files\Blender Foundation\Blender*`），找不到时会列出所有尝试过的路径。已在 Blender 5.2 验证。
+
+流水线细节、坐标约定、材质库、多边形预算与轮廓自检循环见 [tools/blender/README.md](tools/blender/README.md)。
+
 ## 近战
 
 匕首是纯粹的白刃武器，没有投掷、丢弃或任何远程形态：切出刀子后只有两种动作。
@@ -160,7 +181,8 @@ Free For All：单机是 1 位玩家 + 7 个 Bot，联机最多 8 人，一局 5
 | --- | --- |
 | `src/core` | 游戏循环、输入、设置与系统协调 |
 | `src/player` | 快速移动、连跳限速、蹲伏与第一人称相机 |
-| `src/weapons` | 六种武器配置、弹药与换弹、武器栏、程序化模型 |
+| `src/weapons` | 武器配置、弹药与换弹、武器栏、GLB 资产加载与程序化回退模型 |
+| `tools/blender` | 武器建模流水线：参考图分析、几何生成、PBR 材质、预览渲染、校验与 GLB 导出 |
 | `src/bots` | 七种 AI 状态、A* 路径、地面及高架导航图 |
 | `src/world` | `MapKit` 地形工具、十张地图定义、AABB 碰撞与安全出生点 |
 | `src/game` | 命中分区、FFA 规则、计时和排名（`GameMode` 接口可扩展其他模式） |
@@ -173,7 +195,7 @@ Free For All：单机是 1 位玩家 + 7 个 Bot，联机最多 8 人，一局 5
 
 ## 开发与验证
 
-`npm test` 在本地开发服务器运行时执行浏览器验收（`world` + `smoke` + `melee` + `maps` + `progress`）。另有四个单独运行的脚本：`npm run test:pickups` 校验十张地图的补给点位与拾取规则，`npm run test:audio` 在 `OfflineAudioContext` 中检查合成枪声，`npm run test:capture` 覆盖鼠标锁定兼容模式，`npm run test:online` 会自行拉起本地信令服务器与独立 Vite（5174 / 9001 端口），用两个真实浏览器上下文通过 WebRTC 跑完整联机流程，不依赖公网信令。默认使用 Windows 安装的 Chrome，可通过 `CHROME_PATH` 指定浏览器路径。测试固定以英文界面运行（Playwright locale 固定为 `en-US`），因为部分断言直接匹配英文 HUD 文案。测试使用软件 WebGL，性能结果不代表真实 GPU 帧率。结果和截图写入 `test-results/`，其中 `map-*.png` 是十张地图的实机截图。
+`npm test` 在本地开发服务器运行时执行浏览器验收（`world` + `smoke` + `melee` + `maps` + `progress` + 武器资产流水线）。其中 `tests/weapon-assets.mjs` 直接校验 Blender 产出的真实 glTF 二进制：glTF 魔数与长度、网格数与材质数、每个材质是否带 PBR 金属度/粗糙度、是否包含 `Muzzle` 与 `ViewmodelAnchor` 锚点、可动画部件（弹匣 / 扳机 / 枪机 / 刀刃 / 刀柄轴）是否独立拆分、三角形数是否与清单一致，并确认每把武器指向各自独立的 GLB 而不是共用一个通用步枪。另有四个单独运行的脚本：`npm run test:pickups` 校验十张地图的补给点位与拾取规则，`npm run test:audio` 在 `OfflineAudioContext` 中检查合成枪声，`npm run test:capture` 覆盖鼠标锁定兼容模式，`npm run test:online` 会自行拉起本地信令服务器与独立 Vite（5174 / 9001 端口），用两个真实浏览器上下文通过 WebRTC 跑完整联机流程，不依赖公网信令。默认使用 Windows 安装的 Chrome，可通过 `CHROME_PATH` 指定浏览器路径。测试固定以英文界面运行（Playwright locale 固定为 `en-US`），因为部分断言直接匹配英文 HUD 文案。测试使用软件 WebGL，性能结果不代表真实 GPU 帧率。结果和截图写入 `test-results/`，其中 `map-*.png` 是十张地图的实机截图。
 
 <details>
 <summary><b>验收脚本具体检查什么</b></summary>
