@@ -14,8 +14,9 @@ import { weaponModel } from '../weapons/WeaponModel';
 import { WeaponAssetLoader } from '../weapons/WeaponAssetLoader';
 import { KnifeAnimationController } from '../weapons/KnifeAnimationController';
 import { RecoilController } from '../weapons/recoil/RecoilController';
-import { getWeapon } from '../data/weapons';
-import { appearanceKey, weaponTitle } from '../weapons/WeaponAppearance';
+import { canonicalWeaponId, getWeapon } from '../data/weapons';
+import { knifeFamily } from '../weapons/skins/KnifeSkinConfig';
+import { appearanceKey, knifeStyleModel, weaponTitle, type WeaponAppearance } from '../weapons/WeaponAppearance';
 import { t } from './I18n';
 import { Bot, Actor } from '../bots/Bot';
 import { trace } from '../game/Combat';
@@ -46,6 +47,49 @@ const SWINGS: Record<MeleeKind, SwingRig> = {
     light: { wind: [.06, .05, .04, .16, .4, .28], cut: [-.2, -.05, -.1, -.3, -1.15, -.46] },
     heavy: { wind: [.05, .19, .11, .8, .3, .32], cut: [-.18, -.24, -.18, -1.05, -.5, -.58] },
 };
+/**
+ * Resting pose of the first-person rig, keyed by weapon family.
+ *
+ * Every viewmodel is authored pointing down its local -Z, which is straight
+ * down the camera's sight line, so a weapon dropped in at the origin reads as
+ * a dark slab seen from directly behind. The pose therefore seats each family
+ * low and to the right of the crosshair, turns it a few degrees out of the
+ * sight line so the left flank is visible, and holds it far enough away that a
+ * long barrel recedes toward the centre instead of filling the frame. Lengths
+ * are metres; a stocked rifle reaches ~1.2 m, a sniper ~1.6 m, so the sniper
+ * sits deepest.
+ */
+const VIEW_POSES: Record<string, { pos: [number, number, number]; pitch: number; yaw: number; roll: number }> = {
+    rifle: { pos: [.26, -.25, -.55], pitch: 0, yaw: -.12, roll: .035 },
+    smg: { pos: [.24, -.24, -.5], pitch: 0, yaw: -.14, roll: .035 },
+    shotgun: { pos: [.26, -.25, -.56], pitch: 0, yaw: -.12, roll: .035 },
+    sniper: { pos: [.32, -.28, -.92], pitch: 0, yaw: -.1, roll: .02 },
+    pistol: { pos: [.2, -.23, -.32], pitch: -.02, yaw: .72, roll: .08 },
+    // Blades point up and left out of the fist, the way CS2 presents a knife.
+    // A blade runs down its own -Z, so a roll about the view axis alone would
+    // only spin it: the yaw tips it out of the sight line first, and the roll
+    // then swings that off-axis blade up across the frame.
+    knife: { pos: [.16, -.21, -.43], pitch: .04, yaw: .62, roll: -.5 },
+};
+const DEFAULT_VIEW_POSE = VIEW_POSES.rifle;
+/** The rig pose for a weapon in hand; unknown families fall back to the rifle. */
+function viewPose(family: string) {
+    return VIEW_POSES[family] ?? DEFAULT_VIEW_POSE;
+}
+/**
+ * How far behind its own origin a model reaches, and therefore how far the rig
+ * has to hold it.
+ *
+ * This project's stand-ins put the origin on the stock, so the resting offset
+ * doubles as the distance to the rear of the gun. The models converted from
+ * Counter-Strike 2 put it on the grip with the stock trailing behind, so the
+ * same offset would leave the stock almost touching the camera. Seating the
+ * *rear* at the resting offset instead keeps both conventions at the same
+ * apparent size, without touching a single vertex.
+ */
+function restingDepth(rest: number, rear: number, converted: boolean) {
+    return converted ? rest - Math.max(0, rear) : rest;
+}
 export class Game {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(90, innerWidth / innerHeight, .05, 400);
@@ -251,18 +295,47 @@ export class Game {
         const side = this.defuseMode.team(this.player)!;
         const preference = this.loadout.get(side);
         this.weapons.slots[1] = new Weapon(WEAPONS[preference.startingPistol]);
-        this.weapons.appearance = {
-            knifeStyle: this.progress.unlockedKnife(preference.knifeStyle) ? preference.knifeStyle : 'classic',
-            rifleSkin: this.progress.unlockedRifleSkin(preference.rifleSkin) ? preference.rifleSkin : 'standard',
-            pistolSkin: this.progress.unlockedPistolSkin(preference.pistolSkin, preference.startingPistol) ? preference.pistolSkin : 'default',
-            finish: this.settings.data.weaponSkins[this.weapons.slots[0].config.id],
-        };
+        // Weapon *preferences* are per side, but the blade and the finishes are
+        // the player's own, so defuse wears the global cosmetics and only takes
+        // the sidearm choice from the side's row.
+        this.weapons.appearance = this.appearanceFrom(this.settings.data, this.weapons.slots[0].config.id);
         this.weapons.slot = 1;
         this.weapons.primary = 'knife';
         this.recoilController.reset();
         this.buyOpen = false;
         [...this.ais, ...this.tacticalAis].forEach(ai => ai.reset());
         this.faceCenter();
+    }
+    /**
+     * The cosmetics worn for one match.
+     *
+     * Every mode reads the global settings the collection writes, so a pick
+     * survives both the half-time side swap in defuse and a switch between
+     * modes. A pick that is no longer unlocked falls back to the default, and
+     * the pistol-skin gate is checked against the sidearm actually carried.
+     */
+    private appearanceFrom(source: WeaponAppearance, finishWeapon: WeaponId): WeaponAppearance {
+        const pistolSkin = source.pistolSkin ?? 'default';
+        const pistol = this.weapons.slots[1]?.config.id ?? 'glock';
+        return {
+            knifeStyle: this.progress.unlockedKnife(source.knifeStyle) ? source.knifeStyle : 'classic',
+            rifleSkin: this.progress.unlockedRifleSkin(source.rifleSkin) ? source.rifleSkin : 'standard',
+            pistolSkin: this.progress.unlockedPistolSkin(pistolSkin, pistol) ? pistolSkin : 'default',
+            // The finish is per weapon in hand; `updateView` fills it in.
+            finish: this.finishFor(finishWeapon),
+        };
+    }
+    /**
+     * The owner-supplied finish for a weapon, keyed the way the armory stores it
+     * (`weaponSkins[weapon.id]`, or the blade family for the melee slot).
+     */
+    private finishFor(id: WeaponId) {
+        // A blade that ships its own body - the supplied fade butterfly, for
+        // instance - is never repainted by the butterfly family's finish, or the
+        // armory pick would silently override what the collection equipped.
+        if (id === 'knife' && knifeStyleModel(this.weapons.appearance.knifeStyle)) return undefined;
+        const key = id === 'knife' ? knifeFamily(this.weapons.appearance.knifeStyle) ?? 'knife' : canonicalWeaponId(id);
+        return this.settings.data.weaponSkins[key];
     }
     siteAt(position: THREE.Vector3): BombSite | null {
         const sites = this.map.definition.tactical?.sites;
@@ -349,12 +422,20 @@ export class Game {
             if (!defuser?.alive || this.siteAt(defuser.position) !== bomb.site) bomb.cancel();
         }
     }
-    applySettings() { this.fov = this.settings.data.fov; this.audio.volume(); const q = this.settings.data.quality; this.renderer.setPixelRatio(q === 'low' ? 1 : Math.min(devicePixelRatio, q === 'high' ? 2 : 1.5)); this.renderer.shadowMap.enabled = q !== 'low'; this.scene.traverse(o => { if (o instanceof THREE.Mesh) {
+    applySettings() { this.fov = this.settings.data.fov; this.audio.volume(); const q = this.settings.data.quality; this.renderer.setPixelRatio(q === 'low' ? 1 : Math.min(devicePixelRatio, q === 'high' ? 2 : 1.5)); this.renderer.shadowMap.enabled = q !== 'low';
+        // Converted CS2 materials are image-based and lose their metal without
+        // something to reflect. On the low preset the reflection pass is the
+        // first thing to go, because the machines that need that preset are the
+        // ones least able to pay for it.
+        this.viewmodel.attachEnvironment(this.renderer, q !== 'low'); this.scene.traverse(o => { if (o instanceof THREE.Mesh) {
         const materials = Array.isArray(o.material) ? o.material : [o.material];
         materials.forEach(m => m.needsUpdate = true);
     } }); }
     faceCenter() { this.player.yaw = Math.atan2(this.player.position.x, this.player.position.z); this.player.pitch = 0; this.player.recoil = 0; this.player.update(.001, this.input, this.map); }
     start(online = false, mapId?: string, modeId: ModeId = 'ffa') {
+        // The loadout may have changed since the lobby was first shown, so the
+        // warm-up is refreshed here and awaited before controls go live.
+        this.warmViewModels();
         this.modeId = online ? 'ffa' : modeId;
         this.match.mode = this.modeId === 'defuse' ? this.defuseMode : new FreeForAllMode();
         if (this.modeId === 'defuse') this.ensureTacticalBots();
@@ -393,10 +474,11 @@ export class Game {
         else this.pickups.clear();
         this.localBots.forEach(b => b.group.visible = !online);
         this.weapons.primary = this.settings.data.primary as WeaponId;
-        this.weapons.appearance = { knifeStyle: this.settings.data.knifeStyle, rifleSkin: this.settings.data.rifleSkin,
-            finish: this.settings.data.weaponSkins[this.weapons.primary] };
         this.inspect = 0;
         this.weapons.reset();
+        // Free-for-all has no sides, so it wears the global cosmetics the collection
+        // records rather than one side's loadout row.
+        this.weapons.appearance = this.appearanceFrom(this.settings.data, this.weapons.primary);
         this.recoilController.reset();
         this.view.userData.appearance = '';
         this.lastSlot = 0;
@@ -417,6 +499,12 @@ export class Game {
         // Do not let bots attack or the timer advance until controls are available.
         const result = await this.input.lock();
         if (result === 'cancelled' || sequence !== this.captureSequence) return;
+        // Decoding a first-person weapon is a few hundred milliseconds of
+        // synchronous work the browser will not interrupt. Waiting for it here
+        // costs the player that delay once, in the lobby, instead of freezing
+        // the first moments of the match.
+        await this.viewWarmup;
+        if (sequence !== this.captureSequence) return;
         this.running = true;
         this.ui.setCaptureMode(this.input.mode);
         this.ui.update();
@@ -441,7 +529,28 @@ export class Game {
         this.ui.show('menu');
         this.ui.menuLoadout();
         this.view.visible = false;
+        this.warmViewModels();
     }
+    /**
+     * Decode the weapons the player is about to carry while they are still in
+     * the menu.
+     *
+     * A converted Counter-Strike 2 viewmodel is a couple of megabytes of meshopt
+     * data plus WebP textures, and decoding it on the first frame of a match
+     * stalls movement. The loader caches by path, so this makes the in-match
+     * load a clone rather than a fetch.
+     */
+    private warmViewModels() {
+        const appearance: WeaponAppearance = {
+            knifeStyle: this.settings.data.knifeStyle,
+            rifleSkin: this.settings.data.rifleSkin,
+            pistolSkin: this.settings.data.pistolSkin,
+        };
+        const loads = [this.settings.data.primary as WeaponId, 'pistol' as WeaponId, 'knife' as WeaponId]
+            .map(id => this.weaponAssets.loadView(id, appearance).catch(() => undefined));
+        this.viewWarmup = Promise.all(loads);
+    }
+    private viewWarmup: Promise<unknown> = Promise.resolve();
     damage(victim: Actor, amount: number, source: Actor, head = false) { if (this.network.guest || !victim.alive || victim.protectedUntil > this.time || (this.modeId === 'defuse' && (!this.round.combatLive || !this.defuseMode.enemies(source, victim))))
         return;
         const armor = victim.armor ?? 0;
@@ -589,6 +698,11 @@ export class Game {
     updateView(dt: number) {
         const displayed = this.weapons.displayed;
         const cfg = displayed.config;
+        // Owner-supplied finishes are stored one per weapon, so the finish is
+        // resolved from the weapon in hand rather than from whichever slot the
+        // match happened to start on. Setting it here also means a finish
+        // survives the appearance rebuild that `start()` does from settings.
+        this.weapons.appearance.finish = this.finishFor(cfg.id);
         if (this.view.userData.appearance !== appearanceKey(cfg.id, this.weapons.appearance)) {
             this.viewmodel.camera.remove(this.view);
             const requestedAppearance = appearanceKey(cfg.id, this.weapons.appearance);
@@ -616,14 +730,20 @@ export class Game {
         this.flash.visible = this.flashLeft > 0;
         this.flash.rotation.z = Math.random() * Math.PI;
         const knife = cfg.id === 'knife';
+        const family = getWeapon(cfg.id)?.modelFamily ?? cfg.id;
+        const rest = viewPose(family);
+        // Blades are mounted in a fist that is authored at life size, so their
+        // resting offset is already correct and only firearms get reseated.
+        const restZ = restingDepth(rest.pos[2], (this.view.userData.rearZ as number | undefined) ?? 0, this.view.userData.converted === true && !knife);
         const reload = displayed.reloadLeft > 0 ? Math.sin(displayed.reloadLeft / cfg.reloadTime * Math.PI) : 0;
         this.kick *= Math.exp(-18 * dt);
         const aim = this.input.aiming && !knife;
         if (aim || reload > 0 || this.weapons.switchLeft > 0) this.inspect = 0;
         this.inspect = Math.max(0, this.inspect - dt);
         const inspect = this.inspect > 0 ? Math.sin(Math.min(1, this.inspect / .35) * Math.PI / 2) * Math.sin(Math.min(1, (2.5 - this.inspect) / .35) * Math.PI / 2) : 0;
-        const pos = new THREE.Vector3((aim ? .015 : knife ? .18 : .29) - inspect * .15, (knife ? -.23 : -.27) + Math.sin(this.player.bob) * .012 + inspect * .02, (knife ? -.4 : -.46) - inspect * .22);
-        const rot = new THREE.Vector3(this.kick * (knife ? .6 : 2) + inspect * .23, (knife ? -.48 : -.055) - this.input.dx * .0004 + inspect * .95, Math.sin(this.player.bob * .5) * .015 + (knife ? -.2 : 0) - inspect * .2);
+        // Aiming centres the weapon on the sight line instead of the hip pose.
+        const pos = new THREE.Vector3((aim ? .015 : rest.pos[0]) - inspect * .15, (aim ? -.16 : rest.pos[1]) + Math.sin(this.player.bob) * .012 + inspect * .02, (aim ? Math.max(restZ, -.34) : restZ) - inspect * .22);
+        const rot = new THREE.Vector3(rest.pitch + this.kick * (knife ? .6 : 2) + inspect * .23, rest.yaw - this.input.dx * .0004 + inspect * .95, rest.roll + Math.sin(this.player.bob * .5) * .015 - inspect * .2);
         pos.z += this.kick - reload * .22;
         rot.x -= reload * .5;
         rot.z -= reload * .45;
@@ -643,11 +763,6 @@ export class Game {
             pos.x += swing[0]; pos.y += swing[1]; pos.z += swing[2];
             rot.x += swing[3]; rot.y += swing[4]; rot.z += swing[5];
         }
-        // The authored knife runs along local Z. Present its blade broadside
-        // and keep the grip in the lower-right first-person view.
-        if (knife && this.view.userData.assetPath) {
-            pos.x += .05; pos.y += .15; pos.z -= .18; rot.y -= .7;
-        }
         this.view.visible = this.player.alive && !(aim && (getWeapon(cfg.id)?.modelFamily ?? cfg.id) === 'sniper');
         this.view.position.copy(pos);
         this.view.rotation.set(rot.x, rot.y, rot.z);
@@ -655,6 +770,11 @@ export class Game {
         // the grip sits in the hand without editing the procedural pose rig.
         const anchor = this.view.userData.viewmodelAnchor as [number, number, number] | undefined;
         if (anchor && this.view.userData.assetPath) this.view.position.add(new THREE.Vector3(anchor[0], anchor[1], anchor[2]));
+        // Keep the whole viewmodel in front of the camera. The near plane is .01,
+        // and a stocked rifle reaches ~0.35 m behind its origin, so without this
+        // the buttstock is cut off by the camera and the gun reads as incomplete.
+        const rear = this.view.userData.rearZ as number | undefined;
+        if (rear !== undefined) this.view.position.z = Math.min(this.view.position.z, -.06 - rear);
         this.knifeAnimation?.update({ draw: this.drawProgress(), inspect, attack: this.weapon.attack, attackProgress: this.weapon.attackProgress });
         this.camera.fov = THREE.MathUtils.lerp(this.camera.fov, aim ? cfg.scopeFov : this.fov, 1 - Math.exp(-14 * dt));
         this.camera.updateProjectionMatrix();

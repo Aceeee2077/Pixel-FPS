@@ -114,7 +114,7 @@ Weapon levels are shown in the main menu and the armory. Each weapon goes up to 
 
 XP is only awarded when a match ends: the primary weapon you entered the match with earns `40 + 6 per kill` (plus 20 more for finishing first), so a ten-kill match is exactly 100 XP - one level. The pistol and knife award XP based on their own kills.
 
-Levels unlock finishes: M4A4 ASIMOV requires rifle LV 2, and Butterfly Fade / M9 Ruby / Butterfly Emerald / Karambit Emerald require knife LV 1 / 3 / 5 / 7. Locked appearances show as locked in the armory. Levels and map selection are stored locally.
+Levels unlock finishes: M4A4 ASIMOV requires rifle LV 2, and M9 Ruby / Butterfly Emerald / Karambit Emerald require knife LV 3 / 5 / 7. The fade butterfly is a supplied model and is equipable from the first match. Locked appearances show as locked in the armory. Levels and map selection are stored locally.
 
 ## Melee
 

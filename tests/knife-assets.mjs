@@ -41,7 +41,12 @@ try {
   });
   console.log('KNIFE RESOURCE REPORT', result);
   assert.ok(result.fallback, 'procedural knife fallback remains visible');
-  assert.equal(result.knifeGlbPath, '/assets/weapons/m9/m9.glb', 'M9 finish uses its dedicated GLB');
+  // The M9 must resolve to its own blade, never a shared generic knife. Which
+  // file that is depends on whether the optional Counter-Strike 2 conversion
+  // has been run on this machine: the converted M9 is the original model and
+  // takes precedence over this project's stand-in when it is present.
+  const m9Assets = ['/assets/weapons/m9/m9.glb', '/generated-assets/cs2/m9/view.glb'];
+  assert.ok(m9Assets.includes(result.knifeGlbPath), `M9 finish uses its dedicated GLB (got ${result.knifeGlbPath})`);
   assert.ok(result.inSeparateScene, 'knife is rendered by viewmodel camera');
   assert.ok(result.geometryGrowth <= 2, 'repeated skin switches share cached geometry');
   const manifestCandidates = ['dist/assets/weapons/manifest.json', 'public/assets/weapons/manifest.json'];

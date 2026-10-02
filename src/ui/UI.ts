@@ -7,8 +7,14 @@ import { MAPS, RANDOM_MAP_ID, mapById, type MapDefinition } from '../world/Maps'
 import { KNIFE_UNLOCKS, MAX_LEVEL, RIFLE_UNLOCKS, WEAPON_ORDER } from '../core/Progress';
 import { finishName, getLang, knifeName, mapBlurb, mapTag, mapTheme, setLang, t, toggleLang, type Lang } from '../core/I18n';
 import { EquipmentPages } from './EquipmentPages';
+import { applyCrop, skinCrop, subjectCrop, type Crop } from './ReferenceArt';
 export type Screen = 'menu' | 'playing' | 'pause' | 'results' | 'quit';
 const icon = '<svg viewBox="0 0 32 32"><path d="M5 5h15l7 7v7-0l-9 8H5V5zm7 6v5h9l-4-5h-5zm0 10v2h5l3-2h-8z" fill="currentColor"/></svg>';
+const esc = (s: string) => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+/** The free-for-all alias ids and the weapon whose reference render they show. */
+function primaryCropKey(id: string) {
+    return ({ rifle: 'm4a4', smg: 'ump-45', sniper: 'awp', shotgun: 'nova' } as Record<string, string>)[id] ?? id;
+}
 export function gunIcon(id: string) {
     const body = id === 'sniper' ? '<path d="M66 38h74v10H66zM92 24h45v11H92zM145 45h86v5h-86zM98 51h17v24H98z"/>' : id === 'shotgun' ? '<path d="M66 40h140v12H66zM155 55h46v8h-46zM89 51l20 2-7 22H87z"/>' : id === 'smg' ? '<path d="M65 32h94v23H65zM159 40h39v9h-39zM112 55h14v32h-14zM82 55h15v22H82z"/>' : '<path d="M65 36h100v19H65zM165 41h54v8h-54zM103 55h21l-4 26h-17zM76 55h13v21H76zM90 29h47v7H90z"/>';
     return `<svg viewBox="0 0 240 100" aria-hidden="true"><g fill="currentColor">${body}<path d="M20 40l45-4v19H45L20 66z"/></g></svg>`;
@@ -77,15 +83,17 @@ export class UI {
         <header class="lobby-top"><a class="brand" href="#" aria-label="BlockStrike home">${icon}<span>BLOCK<span class="brand-light">STRIKE</span><small>${t('hero.brandTag')}</small></span></a><nav><span class="nav-active">${t('nav.play')}</span><button data-action="armory">${t('nav.armory')}</button><button data-action="loadout">${t('nav.loadout')}</button><button data-action="collection">${t('nav.collection')}</button><button data-action="settings">${t('nav.settings')}</button><button data-action="quit">${t('nav.quit')}</button><button class="lang-toggle" data-action="lang" aria-label="${t('lang.switch')}">${langChip('zh', '中文')}<i>·</i>${langChip('en', 'EN')}</button></nav><span class="build"><i></i> ${t('nav.localPlay')} <b>${t('nav.arenas')}</b></span></header>
         <div class="lobby-body">
           <section class="lobby-hero">
-            <div class="eyebrow"><span class="tiny-block"></span> ${t('hero.eyebrow')}</div>
-            <h1>${t('hero.title')}<br><span>${t('hero.titleAccent')}</span></h1>
-            <p>${t('hero.copy')}<br>${t('hero.copy2')}</p>
-            <div class="hero-tags"><span>${t('hero.tag.player')}</span><span>${t('hero.tag.bots')}</span><span>${t('hero.tag.maps')}</span><span>${t('hero.tag.levels')}</span></div>
-            <div class="lobby-chips" id="menu-levels"></div>
-            <button class="lobby-loadout" data-action="loadout"><span class="eyebrow">${t('hero.loadout')} <span>↗</span></span><div class="weapon-preview-icon" id="menu-gun"></div><div class="lobby-loadout-row"><strong id="menu-weapon">M4A4</strong><span>${t('hero.loadoutAction')}</span></div></button>
+            <div class="lobby-intro">
+              <div class="eyebrow"><span class="tiny-block"></span> ${t('hero.eyebrow')}</div>
+              <h1>${t('hero.title')}<br><span>${t('hero.titleAccent')}</span></h1>
+              <p>${t('hero.copy')}</p>
+            </div>
+            <div class="lobby-kit">
+              <div class="lobby-chips" id="menu-levels"></div>
+              <button class="lobby-loadout" data-action="loadout"><span class="eyebrow">${t('hero.loadout')} <span>↗</span></span><div class="weapon-preview-icon" id="menu-gun"></div><div class="lobby-loadout-row"><strong id="menu-weapon">M4A4</strong><span>${t('hero.loadoutAction')}</span></div></button>
+            </div>
           </section>
           <section class="lobby-map">
-            <div class="lobby-map-head"><span class="eyebrow">${t('map.select')}</span><b id="menu-map-name">BLOCKYARD</b><small id="menu-map-theme"></small></div>
             <div class="map-stage" id="menu-map-stage"></div>
             <div class="map-grid" id="menu-map-grid"></div>
           </section>
@@ -242,6 +250,9 @@ export class UI {
         if (this.dialog === 'multiplayer') this.game.network.leave();
         this.dialog = '';
         this.el('dialog').classList.add('hidden');
+        // A pick made in the collection has to show up on the lobby card the
+        // moment the player is back in the menu.
+        this.menuLoadout();
     }
     else if (action === 'fullscreen') {
         if (document.fullscreenElement)
@@ -252,9 +263,24 @@ export class UI {
     else if (action === 'quit')
         this.show('quit'); }
     menuLoadout() {
-        const s=this.game.settings.data,id=s.primary as WeaponId,image=weaponImage(id,s);
-        this.el('menu-gun').innerHTML=`${image?`<img class="menu-primary-image" src="${image}" alt="${weaponTitle(id,s).split(' / ')[0]}">`:gunIcon(id)}<img class="menu-knife-image" src="${knifeInfo(s.knifeStyle).image}" alt="${knifeName(s.knifeStyle,knifeInfo(s.knifeStyle).label)}">`;
-        this.el('menu-weapon').textContent=`${weaponTitle(id,s).split(' / ')[0]} · ${knifeName(s.knifeStyle, knifeInfo(s.knifeStyle).label)}`;
+        const s = this.game.settings.data, id = s.primary as WeaponId, image = weaponImage(id, s);
+        const gunName = weaponTitle(id, s).split(' / ')[0];
+        const knifeLabel = knifeName(s.knifeStyle, knifeInfo(s.knifeStyle).label);
+        // Both thumbnails are the same square studio renders the catalogue uses,
+        // so they go through the measured subject crop and sit in one row rather
+        // than one of them being pinned over the panel's corner.
+        const tile = (src: string, alt: string, crop: Crop, tag: string) => src
+            ? `<img class="loadout-thumb ${tag}" src="${esc(src)}" alt="${esc(alt)}" data-raw="${esc(src)}" data-crop="${crop.join(',')}" data-crop-aspect="1.6">`
+            : '';
+        this.el('menu-gun').innerHTML =
+            (image ? tile(image, gunName, subjectCrop(primaryCropKey(id)), 'gun') : `<span class="loadout-thumb gun is-icon">${gunIcon(id)}</span>`)
+            + tile(knifeInfo(s.knifeStyle).image, knifeLabel, skinCrop(s.knifeStyle), 'knife');
+        this.el('menu-weapon').textContent = `${gunName} · ${knifeLabel}`;
+        this.el('menu-gun').querySelectorAll<HTMLImageElement>('img[data-crop]').forEach(element => {
+            const values = (element.dataset.crop ?? '').split(',').map(Number);
+            if (values.length === 4 && !values.some(Number.isNaN))
+                applyCrop(element, values as unknown as Crop, Number(element.dataset.cropAspect ?? 1.6) || 1.6);
+        });
         this.menuMaps();
         this.menuLevels();
     }
@@ -271,10 +297,8 @@ export class UI {
         const s = this.game.settings.data, random = s.map === RANDOM_MAP_ID, def = mapById(s.map);
         this.el('menu-map-grid').innerHTML = `<button class="map-chip random ${random ? 'selected' : ''}" data-map="${RANDOM_MAP_ID}" aria-pressed="${random}"><span class="map-chip-art">${MAPS.slice(0, 4).map(m => this.planSvg(m, 3)).join('')}</span><b>${t('map.random')}</b><small>${t('map.randomSmall')}</small></button>` +
             MAPS.map(m => `<button class="map-chip ${!random && s.map === m.id ? 'selected' : ''}" data-map="${m.id}" aria-pressed="${!random && s.map === m.id}"><span class="map-chip-art">${this.planSvg(m, 4)}</span><b>${m.name}</b><small>${mapTag(m)}</small></button>`).join('');
-        this.el('menu-map-name').textContent = random ? t('map.randomRotation') : def.name;
-        this.el('menu-map-theme').textContent = random ? t('map.rotationTheme') : `${mapTag(def)} · ${mapTheme(def)}`;
         this.el('menu-map-chip').textContent = random ? t('map.randomRotation') : def.name;
-        this.el('menu-map-stage').innerHTML = `<div class="map-stage-art">${this.planSvg(def, 13)}</div><div class="map-stage-info"><span class="eyebrow">${random ? t('map.rotation') : mapTag(def)} <b>${random ? '×10' : t('hud.freeForAll')}</b></span><b class="map-stage-name">${random ? t('map.rotationName') : def.name}</b><p>${random ? t('map.rotationCopy') : mapBlurb(def)}</p><div class="map-stage-tags"><span>${def.size * 2} × ${def.size * 2} M</span><span>${t('map.spawns', { n: def.spawns.length })}</span><span>${mapTheme(def)}</span></div></div>`;
+        this.el('menu-map-stage').innerHTML = `<div class="map-stage-art">${this.planSvg(def, 13)}</div><div class="map-stage-info"><span class="eyebrow">${t('map.select')} · ${random ? t('map.rotation') : mapTag(def)} <b>${random ? '×10' : t('hud.freeForAll')}</b></span><b class="map-stage-name">${random ? t('map.rotationName') : def.name}</b><p>${random ? t('map.rotationCopy') : mapBlurb(def)}</p><div class="map-stage-tags"><span>${def.size * 2} × ${def.size * 2} M</span><span>${t('map.spawns', { n: def.spawns.length })}</span><span>${mapTheme(def)}</span></div></div>`;
     }
     /** Primary, sidearm and knife levels shown in the lobby so progression is always visible. */
     menuLevels() {
@@ -282,11 +306,11 @@ export class UI {
         const rows: [WeaponId, string][] = [[s.primary as WeaponId, t('slot.primary')], ['pistol', t('slot.sidearm')], ['knife', t('slot.melee')]];
         const player = p.player;
         const profile = `<div class="lvl-chip"><small>${t('hud.profile')}</small><b>${t('hud.player')}</b><span class="lvl-badge">LV ${player.level}</span><small class="lvl-xp">${player.xp} XP · ${player.kills} ${t('equipment.kills')}</small></div>`;
-        this.el('menu-levels').innerHTML = profile + rows.map(([id, slot]) => {
+        this.el('menu-levels').innerHTML = profile + '<div class="lvl-strip">' + rows.map(([id, slot]) => {
             const w = p.get(id), cost = p.cost(id);
             const name = id === 'knife' ? knifeName(s.knifeStyle, knifeInfo(s.knifeStyle).label) : weaponTitle(id, s).split(' / ')[0];
             return `<button class="lvl-chip" data-action="loadout" aria-label="${t('levelChip.aria', { name, n: w.level })}"><small>${slot}</small><b>${name}</b><span class="lvl-badge">LV ${w.level}</span><i class="lvl-bar"><em style="width:${Math.round(p.progress(id) * 100)}%"></em></i><small class="lvl-xp">${cost ? `${w.xp} / ${cost} XP` : t('level.max', { n: MAX_LEVEL })}</small></button>`;
-        }).join('');
+        }).join('') + '</div>';
     }
     renderPreview(dt: number) { this.equipment.renderPreview(dt); }
     armory() { this.equipment.show('armory'); }
@@ -385,12 +409,16 @@ export class UI {
         this.el('hp').textContent = String(Math.ceil(p.hp));
         this.el('hp-fill').style.width = p.hp + '%';
         this.el('hp-fill').style.background = p.hp < 30 ? '#f0836f' : '#d5f66b';
-        // The knife has nothing to reload, so its panel shows the two stab damages instead.
-        this.el('ammo').innerHTML = w.config.melee ? `${w.config.melee.light.damage} <span>/ ${w.config.melee.heavy.damage}</span>` : `${w.ammo.toString().padStart(2, '0')} <span>/ ${w.reserve}</span>`;
-        this.el('weapon-label').textContent = w.config.melee ? t('hud.stabDamage') : weaponTitle(w.config.id,g.weapons.appearance).toUpperCase();
-        this.el('ammo').closest('.ammo')!.querySelector('kbd')!.classList.toggle('hidden',!!w.config.melee);
-        this.el('primary-label').textContent = weaponTitle(g.weapons.slots[0].config.id,g.weapons.appearance).split(' / ')[0];
         const knifeLabel = knifeName(g.weapons.appearance.knifeStyle, knifeInfo(g.weapons.appearance.knifeStyle).label);
+        // CS2 leaves the ammo area empty for melee: no round count, no reload key,
+        // just the name of the blade in hand.
+        const melee = !!w.config.melee;
+        const ammoPanel = this.el('ammo').closest('.ammo')!;
+        this.el('ammo').innerHTML = melee ? '' : `${w.ammo.toString().padStart(2, '0')} <span>/ ${w.reserve}</span>`;
+        this.el('weapon-label').textContent = (melee ? knifeLabel : weaponTitle(w.config.id,g.weapons.appearance)).toUpperCase();
+        ammoPanel.classList.toggle('melee', melee);
+        ammoPanel.querySelector('kbd')!.classList.toggle('hidden', melee);
+        this.el('primary-label').textContent = weaponTitle(g.weapons.slots[0].config.id,g.weapons.appearance).split(' / ')[0];
         if (knifeLabel !== this.knifeLabel) {
             this.knifeLabel = knifeLabel;
             this.el('slot2').innerHTML = `<kbd>3</kbd>${knifeLabel}`;

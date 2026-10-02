@@ -5,12 +5,20 @@ import { skinById, type WeaponSkin } from './WeaponSkins';
 
 const art = (name: string, weaponId: string) => localReferenceImage(name) ?? `/assets/weapons/${weaponId}/preview.webp`;
 
+/**
+ * Every equipable blade.
+ *
+ * `model` is the owner-supplied body a finish ships with, when it has one; it
+ * is null for the finishes that only tint the knife family's authored body.
+ * The blade a style loads is therefore decided here and not by the weapon
+ * registry, which only knows about the four knife families.
+ */
 export const KNIVES = [
-    { id: 'classic', name: 'Combat Knife', finish: 'IVORY / FIELD', label: '战术匕首', color: '#dce3cf', image: art('Knife.png', 'knife') },
-    { id: 'butterfly-emerald', name: 'Butterfly', finish: 'EMERALD', label: '蝴蝶刀 · 绿宝石', color: '#39e791', image: art('Butterfly_Knife_Emerald.png', 'butterfly') },
-    { id: 'butterfly-fade', name: 'Butterfly', finish: 'FADE', label: '蝴蝶刀 · 渐变之色', color: '#ed81c4', image: art('Butterfly_Knife_Fade.png', 'butterfly') },
-    { id: 'karambit-emerald', name: 'Karambit', finish: 'EMERALD', label: '爪子刀 · 绿宝石', color: '#39e791', image: art('Karambit_Emerald.png', 'karambit') },
-    { id: 'm9-ruby', name: 'M9 Bayonet', finish: 'RUBY', label: 'M9 刺刀 · 红宝石', color: '#f95770', image: art('M9Bayonet_Ruby.png', 'm9') },
+    { id: 'classic', name: 'Combat Knife', finish: 'IVORY / FIELD', label: '战术匕首', color: '#dce3cf', image: art('Knife.png', 'knife'), model: null },
+    { id: 'butterfly-emerald', name: 'Butterfly', finish: 'EMERALD', label: '蝴蝶刀 · 绿宝石', color: '#39e791', image: art('Butterfly_Knife_Emerald.png', 'butterfly'), model: null },
+    { id: 'butterfly-fade', name: 'Butterfly', finish: 'FADE', label: '蝴蝶刀 · 渐变之色', color: '#ed81c4', image: art('Butterfly_Knife_Fade.png', 'butterfly'), model: '/assets/weapons/butterfly-fade/butterfly-fade.glb' },
+    { id: 'karambit-emerald', name: 'Karambit', finish: 'EMERALD', label: '爪子刀 · 绿宝石', color: '#39e791', image: art('Karambit_Emerald.png', 'karambit'), model: null },
+    { id: 'm9-ruby', name: 'M9 Bayonet', finish: 'RUBY', label: 'M9 刺刀 · 红宝石', color: '#f95770', image: art('M9Bayonet_Ruby.png', 'm9'), model: null },
 ] as const;
 export const RIFLE_SKINS = [
     { id: 'standard', name: 'FIELD / 原版', image: art('M4A4.png', 'm4a4') },
@@ -32,6 +40,9 @@ export interface WeaponAppearance {
 }
 export const DEFAULT_APPEARANCE: WeaponAppearance = { knifeStyle: 'classic', rifleSkin: 'standard' };
 export function knifeInfo(style: KnifeStyle) { return KNIVES.find(k => k.id === style)!; }
+
+/** The owner-supplied GLB a blade ships with, or null when it tints an authored body. */
+export function knifeStyleModel(style: KnifeStyle): string | null { return knifeInfo(style).model; }
 export function appearanceKey(id: WeaponId, appearance: WeaponAppearance) {
     return `${id}:${appearance.finish ?? (id === 'knife' ? appearance.knifeStyle : (id === 'rifle' || id === 'm4a4') ? appearance.rifleSkin : getWeapon(id)?.category === 'pistols' || id === 'pistol' ? appearance.pistolSkin ?? 'default' : 'standard')}`;
 }

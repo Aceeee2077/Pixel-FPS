@@ -34,8 +34,11 @@ try {
   assert.equal(await page.locator('.catalog-categories button').count(), 7);
   assert.equal(await page.locator('[data-catalog-category="rifles"]~button').count() > 0, true);
   await page.locator('[data-equip-page="collection"]').click();
+  // The fade butterfly is the free starter blade; the ruby M9 is still gated.
   await page.locator('[data-collection-select="butterfly-fade"]').click();
-  assert.ok(await page.locator('[data-collection-equip="butterfly-fade"]').isDisabled());
+  assert.ok(!await page.locator('[data-collection-equip="butterfly-fade"]').isDisabled());
+  await page.locator('[data-collection-select="m9-ruby"]').click();
+  assert.ok(await page.locator('[data-collection-equip="m9-ruby"]').isDisabled());
   await page.locator('#dialog [data-action="close"]').click();
   await page.locator('#play').click();
   await page.waitForFunction(() => window.__game.running);

@@ -50,28 +50,38 @@ try {
   assert.ok(await page.locator('#armory-canvas canvas').isVisible());
   await page.waitForTimeout(100);
   await page.screenshot({ path: 'test-results/weapon-overhaul-armory.png' });
-  const preview = () => page.evaluate(() => {
-    const p = window.__game.ui.equipment.preview;
-    p.render(0);
-    return p.renderer.info.memory.geometries;
-  });
-  const memoryBefore = await preview();
+  // Wait for the shown model to actually be the one that was asked for: the
+  // armory swaps a placeholder for the real GLB asynchronously, and a converted
+  // Counter-Strike 2 model takes longer to arrive than the stand-in did.
+  const preview = async name => {
+    await page.waitForFunction(expected => {
+      const p = window.__game.ui.equipment.preview;
+      return (p?.displayed?.userData?.assetPath ?? '').includes(expected);
+    }, name, { timeout: 20000 }).catch(() => {});
+    return page.evaluate(() => {
+      const p = window.__game.ui.equipment.preview;
+      p.render(0);
+      return p.renderer.info.memory.geometries;
+    });
+  };
+  const memoryBefore = await preview('ak-47');
   for (let i = 0; i < 3; i++) {
     await page.locator('[data-catalog-weapon="m4a4"]').click({ force: true });
     await page.locator('[data-viewer="3d"]').click({ force: true });
-    await preview();
+    await preview('m4a4');
     await page.locator('[data-catalog-weapon="ak-47"]').click({ force: true });
     await page.locator('[data-viewer="3d"]').click({ force: true });
-    await preview();
+    await preview('ak-47');
   }
-  const memoryAfter = await preview();
+  const memoryAfter = await preview('ak-47');
   assert.ok(memoryAfter <= memoryBefore + 2, `Preview geometry leak: ${memoryBefore} -> ${memoryAfter}`);
   await page.locator('[data-viewer="reference"]').click({ force: true });
   await page.locator('#catalog-search').fill('m4');
   assert.equal(await page.locator('.catalog-card').count(), 2);
   await page.locator('[data-equip-page="collection"]').click();
+  // The fade butterfly ships with the game; the ruby M9 still needs knife LV 3.
   await page.locator('[data-collection-select="butterfly-fade"]').click();
-  assert.ok(await page.locator('[data-collection-equip="butterfly-fade"]').isDisabled());
+  assert.ok(!await page.locator('[data-collection-equip="butterfly-fade"]').isDisabled());
   assert.ok(await page.locator('#collection-canvas canvas').isVisible());
   await page.locator('[data-collection-select="copper"]').click();
   assert.ok(await page.locator('[data-collection-equip="copper"]').isDisabled());

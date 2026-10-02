@@ -707,12 +707,8 @@
         "failures": [],
         "warnings": []
       },
-      "provenance": {
-        "author": "WoodenManufacturing",
-        "source": "https://sketchfab.com/3d-models/csgo-ak47-wild-lotus-0af74d693a014c4d9fe5538b99dc0355",
-        "licence": "CC-BY-4.0"
-      },
-      "source_file": "csgo_ak47_wild_lotus.glb",
+      "provenance": {},
+      "source_file": "ak47_wild_lotus_modified.glb",
       "variant": "wildlotus",
       "weapon": "ak-47",
       "target_length_m": 0.88,
@@ -730,12 +726,8 @@
         "failures": [],
         "warnings": []
       },
-      "provenance": {
-        "author": "WoodenManufacturing",
-        "source": "https://sketchfab.com/3d-models/csgo-weapon-awp-gungnir-e1d6a40dc1f1499c8b960b05d13e7f6c",
-        "licence": "CC-BY-4.0"
-      },
-      "source_file": "csgo_weapon_awp_gungnir.glb",
+      "provenance": {},
+      "source_file": "awp_gungnir_model.glb",
       "variant": "gungnir",
       "weapon": "awp",
       "target_length_m": 1.24,
@@ -768,6 +760,27 @@
       "model": "/assets/weapons/butterfly-csstlyed/butterfly-csstlyed.glb",
       "status": "third_party",
       "blend": "assets-source/blender/butterfly-csstlyed.blend"
+    },
+    "butterfly-fade": {
+      "triangles": 16218,
+      "materials": 8,
+      "parts": 11,
+      "validation": {
+        "ok": true,
+        "failures": [],
+        "warnings": [
+          "Blade.001 has no UV layer"
+        ]
+      },
+      "provenance": {},
+      "source_file": "butterfly_knife_fade.glb",
+      "variant": "butterfly-fade",
+      "weapon": "butterfly",
+      "target_length_m": 0.24,
+      "origin": "third_party_converted",
+      "model": "/assets/weapons/butterfly-fade/butterfly-fade.glb",
+      "status": "third_party",
+      "blend": "assets-source/blender/butterfly-fade.blend"
     }
   },
   "m4a4": "/assets/weapons/m4a4/m4a4.glb",
@@ -800,5 +813,6 @@
   "ump-45": "/assets/weapons/ump-45/ump-45.glb",
   "wildlotus": "/assets/weapons/wildlotus/wildlotus.glb",
   "gungnir": "/assets/weapons/gungnir/gungnir.glb",
-  "butterfly-csstlyed": "/assets/weapons/butterfly-csstlyed/butterfly-csstlyed.glb"
+  "butterfly-csstlyed": "/assets/weapons/butterfly-csstlyed/butterfly-csstlyed.glb",
+  "butterfly-fade": "/assets/weapons/butterfly-fade/butterfly-fade.glb"
 }

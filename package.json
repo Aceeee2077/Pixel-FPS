@@ -12,6 +12,9 @@
     "build:references": "node tools/blender/run-blender.mjs build_reference_manifest.py",
     "publish:weapons": "node tools/blender/publish_assets.mjs",
     "assets:registry": "node tools/blender/gen-asset-registry.mjs",
+    "assets:cs2": "node tools/cs2-assets/pipeline.mjs",
+    "assets:cs2:setup": "node tools/source2viewer/setup.mjs",
+    "assets:cs2:scan": "node tools/cs2-assets/scan.mjs",
     "verify": "npm run publish:weapons && npm run build && npm test",
     "preview": "vite preview --host 0.0.0.0",
     "test": "node tests/world.mjs && node tests/smoke.mjs && node tests/melee.mjs && node tests/maps.mjs && node tests/progress.mjs && node tests/defuse.mjs && node tests/defuse-game.mjs && node tests/recoil.mjs && node tests/knife-assets.mjs && node tests/weapon-overhaul.mjs && node tests/weapon-assets.mjs",
@@ -26,10 +29,14 @@
     "three": "^0.180.0"
   },
   "devDependencies": {
+    "@gltf-transform/core": "^4.5.1",
+    "@gltf-transform/extensions": "^4.5.1",
+    "@gltf-transform/functions": "^4.5.1",
     "@types/three": "^0.180.0",
     "agent-browser": "^0.21.0",
     "peer": "^1.0.2",
     "playwright": "^1.55.0",
+    "sharp": "^0.35.5",
     "typescript": "~5.9.2",
     "vite": "^7.1.7"
   }

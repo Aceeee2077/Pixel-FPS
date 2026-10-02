@@ -11,10 +11,10 @@ zones, and no reference pixel is ever projected onto exported geometry.
 No Valve, Source 2 or other third-party game asset is downloaded, extracted or
 imported for these models.
 
-## Third-party finish models — CC-BY-4.0
+## Supplied models — CC-BY-4.0 finishes and the owner-supplied blade
 
-Three weapon finishes were supplied by the project owner and are **not** original
-work of this project. They were converted to this game's rig contract by
+Four models were supplied by the project owner and are **not** original work of
+this project. They were converted to this game's rig contract by
 `tools/blender/convert_user_model.py` (scale normalised to real-world length,
 muzzle oriented to the game's forward axis, origin moved to the grip, and the
 `Muzzle` / `ViewmodelAnchor` / hand-IK anchors added). Their geometry and
@@ -25,11 +25,21 @@ textures are unchanged.
 | AK-47 | Wild Lotus (`wildlotus`) | WoodenManufacturing | CC-BY-4.0 | <https://sketchfab.com/3d-models/csgo-ak47-wild-lotus-0af74d693a014c4d9fe5538b99dc0355> |
 | AWP | Gungnir (`gungnir`) | WoodenManufacturing | CC-BY-4.0 | <https://sketchfab.com/3d-models/csgo-weapon-awp-gungnir-e1d6a40dc1f1499c8b960b05d13e7f6c> |
 | Butterfly Knife | CS Styled (`butterfly-csstlyed`) | Aslady | CC-BY-4.0 | <https://sketchfab.com/3d-models/csgo-styled-butterfly-knife-6f023e5fb12947e18ce2d93d38e13cfd> |
+| Butterfly Knife | Fade (`butterfly-fade`) | not declared | not declared | supplied locally as `butterfly_knife_fade.glb` |
 
 Each model's Sketchfab page declares `http://creativecommons.org/licenses/by/4.0/`.
 Attribution is required by that licence and is reproduced in-game in the armory
 finish picker, and in `src/weapons/WeaponSkins.ts`, which is the single source of
-truth for these entries.
+truth for the finish entries.
+
+The fade butterfly is different from the three finishes above: it is the body of
+an equipable blade rather than an armory finish, so it is registered in
+`src/weapons/WeaponAppearance.ts` (`KNIVES`) and unlocked from the first match.
+It arrived as a local file with no author, licence or source attached — the
+project owner supplied it directly and accepts responsibility for its terms. It
+is therefore recorded as `third_party` in the asset manifest without a CC-BY
+attribution line, and it can be removed by deleting
+`public/assets/weapons/butterfly-fade/` and its `KNIVES` entry.
 
 ### Note on trade marks
 

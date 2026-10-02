@@ -1,0 +1,9 @@
+{
+  "$comment": [
+    "Copy this file to config/local-assets.json (it is ignored by git) or just run",
+    "`npm run assets:cs2` and let the pipeline detect the install and write it for you.",
+    "Nothing here is read by the game at runtime; it only configures the asset build."
+  ],
+  "cs2InstallPath": "C:/Program Files (x86)/Steam/steamapps/common/Counter-Strike Global Offensive",
+  "source2viewerCli": "tools/source2viewer/bin/Source2Viewer-CLI.exe"
+}

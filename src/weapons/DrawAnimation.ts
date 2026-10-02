@@ -1,9 +1,16 @@
-/** Keyframed wrist motion; the hand never performs a full revolution. */
+/**
+ * Keyframed wrist motion; the hand never performs a full revolution.
+ *
+ * The blade is drawn by turning it into the frame - it starts swung down and
+ * flat, then rises into the idle grip. The travel is deliberately short: the
+ * idle pose already sits low in the corner, so a long drop would carry the
+ * whole viewmodel off the bottom of the screen.
+ */
 export function drawPose(progress: number, knife: boolean): number[] {
     const frames = knife ? [
-        [0, .12, -.22, .16, -.16, .4, -.35],
-        [.48, .04, -.07, .07, -.05, .25, -.2],
-        [.78, -.02, .025, -.015, .05, -.06, .08],
+        [0, .07, -.05, .05, .3, -.35, .42],
+        [.48, .03, -.02, .02, .12, -.16, .2],
+        [.78, -.01, .005, -.01, -.04, .06, -.07],
         [1, 0, 0, 0, 0, 0, 0],
     ] : [[0, .03, -.42, .08, -.38, .12, -.1], [1, 0, 0, 0, 0, 0, 0]];
     const t = Math.max(0, Math.min(1, progress));

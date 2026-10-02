@@ -114,11 +114,16 @@ npm run preview
 
 经验只在整局结束结算：装进比赛的那把主武器拿 `40 + 每击杀 6 点`（拿到第一再 +20），所以一局十杀正好 100 点，也就是升一级；手枪与匕首按各自击杀数给经验。
 
-等级会解锁涂装：M4A4 ASIMOV 需要步枪 LV 2，蝴蝶刀渐变 / M9 红宝石 / 蝴蝶刀绿宝石 / 爪子刀绿宝石 分别需要匕首 LV 1 / 3 / 5 / 7，没解锁的外观在武器库里显示为锁定。等级与地图选择都保存在本地。
+等级会解锁涂装：M4A4 ASIMOV 需要步枪 LV 2，M9 红宝石 / 蝴蝶刀绿宝石 / 爪子刀绿宝石 分别需要匕首 LV 3 / 5 / 7；蝴蝶刀渐变之色是项目自备模型，开局即可装备。没解锁的外观在武器库里显示为锁定。等级与地图选择都保存在本地。
 
 ## 武器模型
 
-全部 29 把武器的 GLB 都是本项目**从零建模**的：参考图只用于校准轮廓、比例与配色分区，没有任何 Valve / CS2 原始模型、Source 2 网格或第三方游戏资产被下载或提取，也没有把参考 PNG 贴在平面上充当模型。
+武器模型有两套来源，游戏会**自动选用当前机器上可用的那一套**：
+
+1. **本项目从零建模的 GLB**（仓库自带，任何环境都能跑）。参考图只用于校准轮廓、比例与配色分区，没有把参考 PNG 贴在平面上充当模型。
+2. **从本机安装的 Counter-Strike 2 转换出来的原始模型**（可选）。使用你**自己合法的本地 CS2 安装**里的源资源，保留原始网格、UV、材质、骨骼与动画，不做任何重建或近似。
+
+两套都走同一条运行时管线（`src/weapons/WeaponAssetLoader.ts`），通过 `public/generated-assets/cs2/manifest.json` 解析路径，因此第二个文件夹不存在时游戏照常运行。转换出来的 Valve 资源**不进入版本库**，细节与授权说明见 [docs/THIRD_PARTY_ASSETS.md](docs/THIRD_PARTY_ASSETS.md)。
 
 ```bash
 npm run build:references   # 扫描参考图，重建 tools/blender/reference_manifest.json
@@ -136,6 +141,40 @@ npm run build:weapon -- --weapon ak-47
 Blender 会自动探测（`BLENDER_PATH` → `PATH` → `C:\Program Files\Blender Foundation\Blender*`），找不到时会列出所有尝试过的路径。已在 Blender 5.2 验证。
 
 流水线细节、坐标约定、材质库、多边形预算与轮廓自检循环见 [tools/blender/README.md](tools/blender/README.md)。
+
+### 可选：用本机的 Counter-Strike 2 资源
+
+需要你自己在 Steam 上拥有 Counter-Strike 2。整条流水线只读取游戏目录，不修改、不上传、不下载任何游戏资源。
+
+```bash
+npm run assets:cs2:setup   # 安装 Source 2 Viewer CLI（ValveResourceFormat 官方 release，MIT）
+npm run assets:cs2:scan    # 直接读 VPK 目录，生成 generated/cs2/cs2-asset-index.json
+npm run assets:cs2         # 检测 CS2 -> 导出 -> 优化 -> 校验 -> 生成清单
+```
+
+常用参数：`-- --weapon ak-47`、`-- --category rifle`、`-- --all-weapons`、`-- --arms`、`-- --max-texture 2048`、`-- --no-compress`、`-- --force`。重复运行会跳过已是最新的武器（比对 `build.json`）。
+
+每一步在做什么：
+
+```text
+tools/cs2-assets/local-cs2.mjs   注册表 / libraryfolders.vdf -> 定位 CS2 与 pak01_dir.vpk
+tools/cs2-assets/vpk.mjs         直接解析 VPK v2 目录，无需外部工具
+tools/cs2-assets/weapons.mjs     武器 id -> weapons/models/**.vmdl_c 映射表（由 scan 得到）
+tools/source2viewer/setup.mjs    安装官方 Source 2 Viewer CLI 到 tools/source2viewer/bin
+tools/cs2-assets/optimize.mjs    选 view(body_hd)/world(body_legacy)、纹理转 WebP、meshopt 压缩
+tools/cs2-assets/validate.mjs    结构校验：网格/UV/材质/贴图/骨骼/动画/包围盒/无穷值
+tools/cs2-assets/pipeline.mjs    串起全流程，写 public/generated-assets/cs2/manifest.json
+```
+
+产出：`generated/cs2/validation-report.json`（逐件校验报告）与 `public/generated-assets/cs2/<武器>/{view,world}.glb`。写路径全部在 `.gitignore` 内。
+
+浏览器里检查转换结果：
+
+```text
+http://localhost:5173/dev/weapon-viewer/
+```
+
+可切换 viewmodel / world、线框、灯光预设、动画片段、旋转，并显示三角形数、draw call、贴图内存、材质数、动画列表、GLB 体积与真实包围盒尺寸。
 
 ## 近战
 
@@ -192,6 +231,10 @@ Free For All：单机是 1 位玩家 + 7 个 Bot，联机最多 8 人，一局 5
 | `src/core/I18n.ts` | 中英文字符串表与语言切换 |
 | `src/ui` | 主菜单、配装、设置、HUD、暂停、记分板与结算 |
 | `src/effects` / `src/audio` | 有上限的实例化粒子池，以及合成的枪声、脚步与切刀音效 |
+| `tools/cs2-assets` | 可选的 CS2 资产流水线：本地安装探测、VPK 索引、转换、优化、校验与清单 |
+| `tools/source2viewer` | Source 2 Viewer CLI 的安装脚本与（被忽略的）二进制 |
+| `dev/weapon-viewer` | 开发用武器查看器页面 |
+| `docs/THIRD_PARTY_ASSETS.md` | Counter-Strike 2 资源的来源、边界与授权说明 |
 
 ## 开发与验证
 

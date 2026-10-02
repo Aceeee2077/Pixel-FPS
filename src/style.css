@@ -793,6 +793,17 @@ kbd {
   font-weight:800;
   font-variant-numeric:tabular-nums;
   letter-spacing:1px}
+/* CS2 leaves the ammo area empty for melee: the panel keeps the blade's name
+  and nothing else — no round count, no reload key. */
+.ammo.melee {
+  padding:13px 18px}
+.ammo.melee small {
+  font-size:13px;
+  letter-spacing:1.1px;
+  color:var(--ink);
+  margin-bottom:0}
+.ammo.melee strong {
+  display:none}
 .ammo strong>span {
   font-size:18px;
   font-weight:400;
@@ -1128,8 +1139,6 @@ h1 {
 }
 :root { --armory-line: var(--hair); }
 .weapon-preview-icon { position:relative; }
-.weapon-preview-icon .menu-primary-image { width:76%;height:86px;object-fit:contain; }
-.weapon-preview-icon .menu-knife-image { position:absolute;right:0;top:4px;width:28%;height:78px;object-fit:contain; }
 .loadout-preview #menu-weapon { font-size:15px; }
 .dialog-panel:has(.armory-header) { width:min(1120px,96vw);padding:25px 32px 20px; }
 .armory-header { display:flex;justify-content:space-between;align-items:center;padding-right:30px; }
@@ -1188,14 +1197,15 @@ h1 {
 .lobby-top { height:88px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--hair);gap:24px; }
 .lobby-top nav { display:flex;align-items:center;gap:30px;height:100%;font-size:11px;letter-spacing:1.5px;font-weight:bold; }
 .lobby-top nav button { background:none;padding:8px 0;font-size:11px;letter-spacing:1.5px; }
-.lobby-body { flex:1;display:grid;grid-template-columns:minmax(340px,40%) 1fr;gap:26px;padding:20px 0 10px;min-height:0; }
-.lobby-hero { display:flex;flex-direction:column;min-width:0; }
+.lobby-body { flex:1;display:grid;grid-template-columns:minmax(320px,36%) 1fr;gap:24px;padding:18px 0 10px;min-height:0; }
+.lobby-hero { display:flex;flex-direction:column;min-width:0;gap:14px; }
+.lobby-intro { display:flex;flex-direction:column; }
 .lobby-hero .eyebrow { display:flex;align-items:center;gap:10px;color:var(--ink);font-size:10px;letter-spacing:1.6px; }
-.lobby-hero h1 { font-size:clamp(44px,4.4vw,78px);letter-spacing:-3.4px;margin:14px 0 12px; }
-.lobby-hero p { font-size:12.5px;line-height:1.85;color:var(--ink-2);margin:0; }
-.lobby-hero .hero-tags { display:flex;gap:7px;margin-top:14px;flex-wrap:wrap; }
-.lobby-hero .hero-tags span { font-family:monospace;font-size:9px;letter-spacing:1.2px;padding:6px 9px;border:1px solid var(--hair);color:var(--ink-2); }
-.lobby-chips { display:flex;flex-direction:column;gap:6px;margin-top:16px; }
+.lobby-hero h1 { font-size:clamp(34px,3.3vw,56px);line-height:1.04;letter-spacing:-2.4px;margin:12px 0 10px; }
+.lobby-hero p { font-size:12px;line-height:1.7;color:var(--ink-2);margin:0; }
+/* Progression and the equipped kit read as one block, pinned under the intro. */
+.lobby-kit { margin-top:auto;display:flex;flex-direction:column;gap:10px; }
+.lobby-chips { display:flex;flex-direction:column;gap:6px; }
 .lvl-chip { display:grid;grid-template-columns:auto auto auto 1fr auto;align-items:center;gap:9px;text-align:left;background:var(--glass);border:1px solid var(--hair);padding:7px 10px; }
 .lvl-chip:hover { background:var(--glass-3); }
 .lvl-chip small { font-size:8px;letter-spacing:1.3px;color:var(--ink-3); }
@@ -1204,22 +1214,29 @@ h1 {
 .lvl-bar { display:block;height:4px;background:var(--hair);min-width:54px;flex:1 1 auto;overflow:hidden; }
 .lvl-bar em { display:block;height:100%;background:var(--lime);transition:width .25s; }
 .lvl-chip .lvl-xp { text-align:right;color:var(--ink-2);font-family:monospace;font-size:8.5px; }
-.lobby-loadout { margin-top:auto;display:flex;flex-direction:column;background:var(--glass);border:1px solid var(--hair);padding:10px 15px 12px;text-align:left; }
-.lobby-loadout .eyebrow { font-size:9px;letter-spacing:1.5px;color:var(--ink-2);display:block; }
-.lobby-loadout .eyebrow>span { float:right; }
-.lobby-loadout .weapon-preview-icon { height:56px;margin:0;text-align:center;color:var(--ink-2);transform:rotate(-7deg);position:relative; }
-.lobby-loadout .weapon-preview-icon svg { height:100%;width:70%; }
-.lobby-loadout .menu-primary-image { max-height:56px;object-fit:contain; }
-.lobby-loadout .menu-knife-image { position:absolute;right:2px;top:2px;height:50px;width:auto;object-fit:contain; }
-.lobby-loadout-row { display:flex;justify-content:space-between;align-items:center;gap:10px; }
-.lobby-loadout-row strong { font-size:16px; }
-.lobby-loadout-row span { font-size:9px;letter-spacing:1px;color:var(--ink-2);text-align:right; }
-.lobby-map { display:flex;flex-direction:column;min-height:0;min-width:0; }
-.lobby-map-head { display:flex;align-items:baseline;gap:12px;flex-wrap:wrap; }
-.lobby-map-head .eyebrow { font-size:9px;letter-spacing:1.8px;color:var(--ink-2); }
-.lobby-map-head b { font-size:30px;letter-spacing:-1.2px; }
-.lobby-map-head small { font-size:10px;color:var(--ink-2);letter-spacing:.6px; }
-.map-stage { flex:1;display:grid;grid-template-columns:minmax(170px,38%) 1fr;gap:16px;border:1px solid var(--hair);background:linear-gradient(155deg,var(--glass),var(--glass));padding:14px;margin-top:10px;min-height:0; }
+/* The three weapon levels sit side by side so the hero column keeps its room. */
+.lvl-strip { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px; }
+.lvl-strip .lvl-chip { grid-template-columns:1fr auto;grid-template-areas:"slot badge" "name name" "bar bar" "xp xp";gap:4px 8px;padding:8px 10px; }
+.lvl-strip .lvl-chip>small:first-child { grid-area:slot; }
+.lvl-strip .lvl-chip .lvl-badge { grid-area:badge; }
+.lvl-strip .lvl-chip b { grid-area:name;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.lvl-strip .lvl-chip .lvl-bar { grid-area:bar;min-width:0; }
+.lvl-strip .lvl-chip .lvl-xp { grid-area:xp;text-align:left; }
+/* One row, two cropped tiles: nothing is pinned or rotated over the border. */
+.lobby-loadout { margin-top:auto;display:grid;gap:8px;background:var(--glass);border:1px solid var(--hair);padding:12px 15px 14px;text-align:left;overflow:hidden; }
+.lobby-loadout .eyebrow { font-size:9px;letter-spacing:1.5px;color:var(--ink-2);display:flex;justify-content:space-between;gap:10px; }
+.lobby-loadout .weapon-preview-icon { height:72px;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--ink-2); }
+.loadout-thumb { height:100%;width:auto;max-width:42%;object-fit:contain;background:var(--glass-2);border:1px solid var(--hair); }
+.loadout-thumb.is-icon { width:58%;display:grid;place-items:center; }
+.loadout-thumb.is-icon svg { height:78%;width:70%; }
+/* Grid items default to min-width:auto, which would let a long blade name push
+   the row past the card and clip it against the border. */
+.lobby-loadout>.eyebrow,.lobby-loadout>.weapon-preview-icon,.lobby-loadout-row { min-width:0; }
+.lobby-loadout-row { display:flex;justify-content:space-between;align-items:flex-end;gap:12px; }
+.lobby-loadout-row strong { font-size:15px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.lobby-loadout-row span { flex:0 0 auto;font-size:9px;letter-spacing:1px;color:var(--ink-2);text-align:right; }
+.lobby-map { display:flex;flex-direction:column;min-height:0;min-width:0;gap:10px; }
+.map-stage { flex:1;display:grid;grid-template-columns:minmax(170px,36%) 1fr;gap:16px;border:1px solid var(--hair);background:var(--glass);padding:14px;min-height:0; }
 .map-stage-art { display:flex;align-items:center;justify-content:center;background:var(--glass-2);border:1px solid var(--hair);padding:8px;min-height:0; }
 .map-stage-art svg { width:100%;height:100%;max-height:210px;image-rendering:pixelated; }
 .map-stage-info { display:flex;flex-direction:column;gap:7px;min-width:0; }
@@ -1229,7 +1246,7 @@ h1 {
 .map-stage-info p { font-size:11.5px;line-height:1.75;color:var(--ink-2);margin:0; }
 .map-stage-tags { display:flex;gap:6px;flex-wrap:wrap;margin-top:auto; }
 .map-stage-tags span { font-family:monospace;font-size:9px;letter-spacing:.6px;border:1px solid var(--hair);padding:4px 7px;color:var(--ink-2); }
-.map-grid { margin-top:10px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px; }
+.map-grid { display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px; }
 .map-chip { display:flex;flex-direction:column;gap:3px;align-items:stretch;padding:6px;background:var(--glass);border:1px solid var(--hair);text-align:left; }
 .map-chip:hover { background:var(--glass-3); }
 .map-chip.selected { border-color:var(--lime);background:var(--glass-3);box-shadow:inset 0 -2px var(--lime); }
@@ -1275,19 +1292,17 @@ h1 {
 
 @media (max-width:1180px) {
   .lobby-body { grid-template-columns:1fr;grid-template-rows:auto 1fr;gap:14px; }
-  .lobby-hero h1 { font-size:42px;letter-spacing:-2px;margin:8px 0; }
+  .lobby-hero h1 { font-size:38px;letter-spacing:-1.8px;margin:8px 0; }
   .lobby-hero p { display:none; }
-  .lobby-chips { flex-direction:row; }
-  .lvl-chip { flex:1;grid-template-columns:auto 1fr auto; }
-  .lvl-chip .lvl-bar { grid-column:1/-1; }
+  .lobby-chips { margin-top:10px; }
   .lobby-loadout { margin-top:10px; }
   .map-grid { grid-template-columns:repeat(6,minmax(0,1fr)); }
 }
 @media (max-height:760px) {
   .lobby-top { height:70px; }
-  .lobby-hero h1 { font-size:40px;letter-spacing:-2px;margin:8px 0; }
-  .lobby-loadout .weapon-preview-icon { height:44px; }
-  .map-stage-art svg { max-height:150px; }
+  .lobby-hero h1 { font-size:36px;letter-spacing:-1.8px;margin:8px 0; }
+  .lobby-loadout .weapon-preview-icon { height:54px; }
+  .map-stage-art svg { max-height:140px; }
   .map-chip-art { height:32px; }
   .lobby-foot .play-button { padding:18px 22px;font-size:30px; }
   .armory-levels { grid-template-columns:1fr; }
@@ -1442,37 +1457,30 @@ h1 {
    make them win at every size and quietly undo the compact and stacked layouts.
    ========================================================================== */
 @media (min-width:1181px) {
-  .map-grid { grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; }
-  .map-chip.random { grid-column:1 / -1; flex-direction:row; align-items:center; gap:12px; padding:7px 11px; }
-  .map-chip.random .map-chip-art { flex:0 0 88px; width:88px; height:40px; }
-  .map-chip.random b { font-size:10.5px; letter-spacing:.4px; }
-  .map-chip.random small { margin-left:auto; font-size:8.5px; letter-spacing:.5px; }
+  /* Six columns of twelve cards: eleven arenas plus the random pick fill two
+     even rows, with no lone card left on a third. */
+  .map-grid { grid-template-columns:repeat(6,minmax(0,1fr)); gap:8px; }
   .map-chip { padding:7px; gap:4px; align-content:start; }
 }
 @media (min-width:1181px) and (min-height:761px) {
   .map-chip-art { height:46px; }
   .map-chip b { font-size:9.5px; letter-spacing:.2px; }
   .map-chip small { font-size:8px; letter-spacing:.4px; }
-  .lvl-chip { padding:9px 11px; }
-  .lvl-chip b { font-size:12.5px; }
+  .lvl-strip .lvl-chip { padding:9px 11px; }
+  .lvl-strip .lvl-chip b { font-size:12.5px; }
   .lobby-chips { gap:7px; }
-  .lobby-loadout { padding:12px 16px 14px; }
-  .lobby-loadout .weapon-preview-icon { height:76px; }
-  .lobby-loadout .menu-primary-image { max-height:76px; }
-  .lobby-loadout .menu-knife-image { height:62px; }
+  .lobby-loadout { padding:13px 16px 15px; }
+  .lobby-loadout .weapon-preview-icon { height:82px; }
 }
 /* Short laptops: the hero column ran 11px past its box before this was added. */
 @media (min-width:1181px) and (max-height:760px) {
-  .lvl-chip { padding:5px 10px; }
-  .lobby-chips { gap:5px; }
+  .lvl-strip .lvl-chip { padding:6px 10px; }
+  .lobby-chips { gap:6px; }
 }
 /* Stacked layout (the lobby goes single column): RANDOM spans two cells so the
    eleven cards fill two even rows of six instead of ending with a hole. */
 @media (max-width:1180px) {
   .map-grid { grid-template-columns:repeat(6,minmax(0,1fr)); gap:6px; }
-  .map-chip.random { grid-column:span 2; flex-direction:row; align-items:center; gap:10px; padding:6px 9px; }
-  .map-chip.random .map-chip-art { flex:0 0 70px; width:70px; height:32px; }
-  .map-chip.random small { margin-left:auto; }
   .map-chip { padding:5px; gap:3px; }
   .map-chip-art { height:32px; }
 }

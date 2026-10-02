@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Weapon Viewer · BlockStrike</title>
+<style>
+  :root { color-scheme: dark; --line:#2b3a33; --ink:#e6efe6; --dim:#8fa091; --accent:#d5f66b; }
+  * { box-sizing: border-box; }
+  body { margin:0; height:100vh; display:grid; grid-template-columns:260px 1fr 280px; font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace; background:#0d1512; color:var(--ink); }
+  aside { overflow:auto; border-right:1px solid var(--line); background:#111c18; }
+  aside:last-child { border-right:0; border-left:1px solid var(--line); }
+  header { padding:12px 14px; border-bottom:1px solid var(--line); position:sticky; top:0; background:#111c18; z-index:1; }
+  h1 { font-size:12px; letter-spacing:.12em; margin:0 0 2px; text-transform:uppercase; }
+  .sub { color:var(--dim); font-size:11px; }
+  ul { list-style:none; margin:0; padding:6px; }
+  li button { width:100%; text-align:left; background:none; border:0; color:var(--ink); padding:5px 8px; border-radius:4px; cursor:pointer; font:inherit; display:flex; justify-content:space-between; gap:8px; }
+  li button:hover { background:#1b2a24; }
+  li button.selected { background:var(--accent); color:#122014; font-weight:700; }
+  li button small { color:var(--dim); }
+  li button.selected small { color:#3b4a2a; }
+  #stage { position:relative; min-width:0; }
+  canvas { display:block; width:100%; height:100%; }
+  #toolbar { position:absolute; inset:10px auto auto 10px; display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+  #toolbar button, #toolbar select, #toolbar label { background:#16231de6; border:1px solid var(--line); color:var(--ink); border-radius:4px; padding:5px 9px; font:inherit; cursor:pointer; }
+  #toolbar button.on { background:var(--accent); color:#122014; }
+  #toolbar label { display:flex; gap:6px; align-items:center; cursor:pointer; }
+  #hud { position:absolute; left:10px; bottom:10px; background:#0b120fe6; border:1px solid var(--line); border-radius:4px; padding:8px 10px; max-width:min(70%,640px); }
+  dl { display:grid; grid-template-columns:auto 1fr; gap:2px 12px; margin:0; }
+  dt { color:var(--dim); }
+  dd { margin:0; text-align:right; }
+  section { padding:12px 14px; border-bottom:1px solid var(--line); }
+  section h2 { font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); margin:0 0 8px; }
+  .badge { display:inline-block; padding:1px 6px; border-radius:3px; font-size:10px; letter-spacing:.06em; }
+  .badge.cs2 { background:#2c4a6b; color:#cfe6ff; }
+  .badge.local { background:#3d4a2c; color:#e2f7bd; }
+  .warn { color:#f0b37e; }
+  .err { color:#f08e8e; }
+</style>
+</head>
+<body>
+  <aside>
+    <header>
+      <h1>Weapon viewer</h1>
+      <div class="sub" id="source-note">loading manifests…</div>
+    </header>
+    <ul id="list"></ul>
+  </aside>
+  <div id="stage">
+    <canvas id="view"></canvas>
+    <div id="toolbar">
+      <button id="mode-view" class="on">viewmodel</button>
+      <button id="mode-world">world</button>
+      <button id="wire">wireframe</button>
+      <button id="spin" class="on">spin</button>
+      <button id="reset">reset</button>
+      <select id="light">
+        <option value="studio">studio</option>
+        <option value="overcast">overcast</option>
+        <option value="rim">rim</option>
+        <option value="flat">flat</option>
+      </select>
+      <select id="animation"><option value="">bind pose</option></select>
+    </div>
+    <div id="hud"></div>
+  </div>
+  <aside>
+    <header><h1>Diagnostics</h1><div class="sub" id="asset-path"></div></header>
+    <section><h2>Geometry</h2><dl id="geo"></dl></section>
+    <section><h2>Materials</h2><dl id="mat"></dl></section>
+    <section><h2>Animation</h2><dl id="anim"></dl></section>
+  </aside>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

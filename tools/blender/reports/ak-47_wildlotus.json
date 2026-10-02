@@ -7,12 +7,8 @@
     "failures": [],
     "warnings": []
   },
-  "provenance": {
-    "author": "WoodenManufacturing",
-    "source": "https://sketchfab.com/3d-models/csgo-ak47-wild-lotus-0af74d693a014c4d9fe5538b99dc0355",
-    "licence": "CC-BY-4.0"
-  },
-  "source_file": "csgo_ak47_wild_lotus.glb",
+  "provenance": {},
+  "source_file": "ak47_wild_lotus_modified.glb",
   "variant": "wildlotus",
   "weapon": "ak-47",
   "target_length_m": 0.88,

@@ -1,0 +1,21 @@
+{
+  "triangles": 16218,
+  "materials": 8,
+  "parts": 11,
+  "validation": {
+    "ok": true,
+    "failures": [],
+    "warnings": [
+      "Blade.001 has no UV layer"
+    ]
+  },
+  "provenance": {},
+  "source_file": "butterfly_knife_fade.glb",
+  "variant": "butterfly-fade",
+  "weapon": "butterfly",
+  "target_length_m": 0.24,
+  "origin": "third_party_converted",
+  "model": "/assets/weapons/butterfly-fade/butterfly-fade.glb",
+  "status": "third_party",
+  "blend": "assets-source/blender/butterfly-fade.blend"
+}

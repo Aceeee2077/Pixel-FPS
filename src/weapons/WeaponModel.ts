@@ -265,6 +265,16 @@ function knife(g: THREE.Group, style: KnifeStyle) {
 }
 function hands(g: THREE.Group, id: WeaponId) {
     const glove=material(0x364d42,'rubber'),seams=material(0x1e302b,'rubber'),sleeve=material(0x748572);
+    // A held blade shows only the fist: the forearm would sit a hand's width
+    // from the viewmodel camera and read as a slab across the corner of the
+    // screen. The melee hand is therefore authored at true scale, on its own.
+    if(id==='knife') {
+        box(g,glove,.015,-.045,.1,.1,.088,.135);
+        for(let i=0;i<4;i++)box(g,seams,-.041,-.002+i*.001,.045+i*.029,.024,.046,.052);
+        box(g,glove,-.041,.036,.088,.05,.052,.062);
+        box(g,sleeve,.02,-.055,.045,.092,.078,.088);
+        return;
+    }
     const u=id==='knife'?.16:id==='pistol'?.008:-.05,y=id==='knife'?-.07:-.24;
     box(g,glove,.015,y,u,.145,.135,.16);box(g,sleeve,.035,y-.04,u-.15,.16,.16,.18);
     box(g,seams,.035,y-.024,u-.071,.166,.145,.042);
@@ -444,7 +454,16 @@ export function weaponModel(id: WeaponId, view=false, appearance: WeaponAppearan
         if(referenceGun(g,id,appearance)) { /* authored temporary silhouette above */ }
         else if(family==='rifle')rifle(g,appearance.rifleSkin==='asimov' && (id==='rifle' || id==='m4a4'));
         else if(family==='smg')smg(g);else if(family==='sniper')sniper(g);else if(family==='pistol')pistol(g);
-        else if(family==='knife')knife(g,id==='butterfly'?'butterfly-emerald':id==='karambit'?'karambit-emerald':id==='m9'?'m9-ruby':appearance.knifeStyle);else shotgun(g);
+        else if(family==='knife') {
+            // Blades are authored on the same scale as the firearms but a knife
+            // is a third of a rifle's length, so the held size is corrected here
+            // once for both the procedural fallback and the supplied GLBs.
+            const blade=new THREE.Group();blade.scale.setScalar(KNIFE_MODEL_SCALE);
+            knife(blade,id==='butterfly'?'butterfly-emerald':id==='karambit'?'karambit-emerald':id==='m9'?'m9-ruby':appearance.knifeStyle);
+            g.add(blade);
+            g.userData.muzzle=[0,0,-.9*KNIFE_MODEL_SCALE];
+        }
+        else shotgun(g);
         if(view)hands(g,family);
         g.userData.appearance=appearanceKey(id,appearance);g.userData.weapon=id;
         models.set(key,bake(g));
@@ -452,12 +471,50 @@ export function weaponModel(id: WeaponId, view=false, appearance: WeaponAppearan
     return models.get(key)!.clone();
 }
 
+/**
+ * Blades are modelled at firearm scale, which leaves a knife as long as a
+ * rifle once it is in the fist. Held at this fraction a butterfly reads about
+ * the length of a forearm, which is how the first-person reference frames it.
+ */
+export const KNIFE_MODEL_SCALE = 1.5;
+
 let cachedKnifeHands: THREE.Group | undefined;
+/**
+ * Where the fist closes, in the supplied-model hands' own space.
+ *
+ * Modern shooters do not assume a weapon model's origin is its grip: the arms
+ * carry a socket and the weapon is seated on it (CS2 does this with a hand
+ * attachment). These numbers mirror the glove/finger boxes `hands()` builds —
+ * the grip axis runs through the fingers, and the palm's front face is where a
+ * handle should enter the fist.
+ */
+export const KNIFE_GRIP_SOCKET = { x: .015, y: -.045, z: -.1 } as const;
+/**
+ * How far behind the weapon's origin the fist closes, along the weapon's axis.
+ * Every blade this project ships puts its origin on the pommel with the handle
+ * running forward, so the fist closes right at the origin.
+ */
+export const KNIFE_GRIP_ALONG = 0;
+/**
+ * The held-blade fist is authored at life size (a 10 x 8.8 x 13.5 cm palm),
+ * so the rig scale stays at 1; the grip socket scales with it if this changes.
+ */
+export const KNIFE_HANDS_SCALE = .8;
 export function weaponHands() {
     if (!cachedKnifeHands) {
         cachedKnifeHands = new THREE.Group();
         hands(cachedKnifeHands, 'knife');
+        // Bake at hand size, then leave the group itself unscaled so the merged
+        // geometry is not scaled a second time.
+        cachedKnifeHands.scale.setScalar(KNIFE_HANDS_SCALE);
         bake(cachedKnifeHands);
+        cachedKnifeHands.scale.setScalar(1);
+        const socket = new THREE.Group();
+        socket.name = 'GripSocket';
+        socket.position.set(KNIFE_GRIP_SOCKET.x * KNIFE_HANDS_SCALE,
+            KNIFE_GRIP_SOCKET.y * KNIFE_HANDS_SCALE,
+            KNIFE_GRIP_SOCKET.z * KNIFE_HANDS_SCALE);
+        cachedKnifeHands.add(socket);
     }
     return cachedKnifeHands.clone();
 }

@@ -12,7 +12,43 @@ test-results/
 /*.jpeg
 /*.webp
 
+# Raw model sources kept at the repository root, next to that reference art.
+# They are the inputs to tools/blender/convert_user_model.py; the optimized,
+# published results live under public/assets/weapons and are tracked there.
+# Only root level: assets-source/ and public/ keep their own tracked models.
+/*.glb
+/*.gltf
+/*.fbx
+/*.obj
+/*.dae
+/*.blend
+
 # Blender working renders, masks and silhouettes are reproducible local output.
 /tools/blender/previews/
 /tools/blender/reference_work/
 /tools/blender/silhouettes/
+
+# ---------------------------------------------------------------------------
+# Counter-Strike 2 development assets.
+#
+# Everything under these paths is derived from a locally installed, legally
+# owned copy of Counter-Strike 2 and belongs to Valve Corporation. It stays out
+# of version control: the code, the extraction scripts and the manifests that
+# describe it are tracked, the extracted geometry, textures and audio are not.
+#
+# The game runs without them - see docs/THIRD_PARTY_ASSETS.md.
+# ---------------------------------------------------------------------------
+/generated/
+/public/generated-assets/
+/tools/source2viewer/bin/
+
+# The detected Steam / CS2 install path is machine specific.
+/config/local-assets.json
+
+# Raw output of the extraction step, if it is ever pointed somewhere else.
+*.vmdl_c
+*.vmesh_c
+*.vmat_c
+*.vcompmat_c
+*.vtex_c
+*.vanim_c

@@ -16,6 +16,7 @@ export const weaponAssets: Readonly<Record<string, WeaponAssetRecord>> = {
     'awp': { model: '/assets/weapons/awp/awp.glb', thumbnail: '/assets/weapons/awp/preview.webp', status: 'refining', triangles: 15475, materials: 8 },
     'butterfly': { model: '/assets/weapons/butterfly/butterfly.glb', thumbnail: '/assets/weapons/butterfly/preview.webp', status: 'refining', triangles: 7952, materials: 5 },
     'butterfly-csstlyed': { model: '/assets/weapons/butterfly-csstlyed/butterfly-csstlyed.glb', thumbnail: '/assets/weapons/butterfly-csstlyed/preview.webp', status: 'third_party', triangles: 16218, materials: 8 },
+    'butterfly-fade': { model: '/assets/weapons/butterfly-fade/butterfly-fade.glb', thumbnail: '/assets/weapons/butterfly-fade/preview.webp', status: 'third_party', triangles: 16218, materials: 8 },
     'cz75': { model: '/assets/weapons/cz75/cz75.glb', thumbnail: '/assets/weapons/cz75/preview.webp', status: 'refining', triangles: 7956, materials: 6 },
     'deagle': { model: '/assets/weapons/deagle/deagle.glb', thumbnail: '/assets/weapons/deagle/preview.webp', status: 'refining', triangles: 7919, materials: 5 },
     'famas': { model: '/assets/weapons/famas/famas.glb', thumbnail: '/assets/weapons/famas/preview.webp', status: 'refining', triangles: 6448, materials: 4 },

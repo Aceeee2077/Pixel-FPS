@@ -15,6 +15,12 @@ of the anchors the game reads. This step normalises them:
   * add ``Muzzle``, ``ViewmodelAnchor``, ``LeftHandIK``, ``RightHandIK``,
   * turn the knife's handle nodes into real ``PivotLeft``/``PivotRight`` pivots.
 
+For knives it also aligns the *blade itself* to the frame the authored knives
+are built in (``weapons/butterfly.py``: ``+Y`` blade-forward, ``+Z`` up, the flat
+faces looking along ``+-X``). ``normalise`` can only choose which principal axis
+points forward, so a knife posed diagonally inside its own bounding box would
+otherwise stay yawed sideways and rolled flat.
+
 It does not generate geometry and does not claim the model is original work:
 provenance and licence are recorded in the asset manifest and CREDITS.md.
 """
@@ -223,7 +229,8 @@ def normalise(objects, target_length, orientation="auto", weapon_id=None, flip=F
 
     best = None
     for index, euler in enumerate(candidates):
-        trial = [(obj, obj.matrix_world.copy()) for obj in objects]
+        trial = [(obj, obj.matrix_world.copy(), [vertex.co.copy() for vertex in obj.data.vertices])
+                 for obj in objects if obj.type == "MESH"]
         apply_rotation(objects, euler)
         # scale to the final size first so any measurement is at game scale
         minimum, maximum = bounds(objects)
@@ -245,13 +252,24 @@ def normalise(objects, target_length, orientation="auto", weapon_id=None, flip=F
         score = silhouette if silhouette > 0.08 else bulk
         print("   orientation try %d %s -> silhouette %.4f bulk %.0f (muzzle at %s, %.1f vs %.1f)"
               % (index, tuple(round(math.degrees(v), 1) for v in euler), silhouette, bulk, end, low, high))
-        if best is None or score > best["score"]:
+        # ``--flip`` forces the *other* orientation than the heuristics prefer.
+        # Sculpted models break those heuristics: the AWP Gungnir carries a carved
+        # dragon head at the muzzle, so the slimmer end is really the buttstock and
+        # the bulk test would otherwise point the rifle at the player.
+        better = best is None or (score < best["score"] if flip else score > best["score"])
+        if better:
             best = {"score": score, "euler": euler, "length": raw_length,
                     "silhouette": silhouette, "bulk": end, "scale": scale,
                     "method": "silhouette" if silhouette > 0.08 else "bulk"}
-        # rewind geometry so the next candidate starts from the original pose
-        for obj, matrix in trial:
+        # Rewind the matrices *and* the baked vertex positions: `apply_transform`
+        # writes world space straight into the mesh, so restoring the matrices alone
+        # would stack every candidate on top of the previous one - and the winner
+        # would then be applied a second time when it is committed below.
+        for obj, matrix, coords in trial:
             obj.matrix_world = matrix
+            for vertex, co in zip(obj.data.vertices, coords):
+                vertex.co = co
+            obj.data.update()
         bpy.context.view_layer.update()
 
     apply_rotation(objects, best["euler"])
@@ -287,6 +305,99 @@ def _silhouette_score(objects, weapon_id, tag):
     except Exception as error:  # noqa: BLE001 - scoring must never abort a build
         print("   ! silhouette scoring unavailable: %r" % (error,))
         return 0.0
+
+
+def _blade_billet(objects):
+    return [obj for obj in objects if obj.type == "MESH" and "blade" in obj.name.lower()]
+
+
+def _world_points(objects):
+    import numpy
+    points = []
+    for obj in objects:
+        matrix = obj.matrix_world
+        for vertex in obj.data.vertices:
+            co = matrix @ vertex.co
+            points.append((co.x, co.y, co.z))
+    return numpy.asarray(points, dtype=float)
+
+
+def align_knife(objects, weapon_id):
+    """Rotate a supplied knife into the project's knife frame.
+
+    ``normalise`` only decides which of the model's principal axes points
+    forward, so a knife posed diagonally inside its own bounding box still lands
+    yawed sideways and rolled flat: the blade reads as a slab lying on the table
+    instead of an upright blade. The blade billet is a flat, elongated plate, so
+    its own principal axes give the true frame, and the project's authored
+    knives give the signs (see ``weapons/butterfly.py``):
+
+        tip  -> +Y     blade forward
+        spine -> +Z    spine up, cutting edge down
+        flat -> +-X    the blade's faces look sideways
+
+    Skipped, with a warning, when no blade billet can be identified.
+    """
+    import numpy
+    from mathutils import Matrix, Vector
+
+    blades = _blade_billet(objects)
+    if not blades:
+        print("   ! no blade billet matched; knife orientation left as imported")
+        return
+    points = _world_points(blades)
+    if len(points) < 8:
+        print("   ! blade billet has too few vertices; orientation left as imported")
+        return
+    centre = points.mean(axis=0)
+    _, vectors = numpy.linalg.eigh(numpy.cov((points - centre).T))
+    flat, width, long = vectors[:, 0], vectors[:, 1], vectors[:, 2]
+    raw_flat, raw_long = flat.copy(), long.copy()
+
+    # The blade sits in front of the rest of the knife, so the tip is the end the
+    # blade's axis points to when it leads away from the body.
+    body = [obj for obj in objects if obj.type == "MESH" and obj not in blades]
+    reference = _world_points(body).mean(axis=0) if body else points.mean(axis=0)
+    if float(numpy.dot(centre - reference, long)) < 0:
+        long = -long
+
+    # The spine is the thick side of the billet and it goes up. Measuring the
+    # whole billet's thickness against its width correlates better than sampling
+    # the two ends, which a fuller or a tapered tip can fool. The authored knives
+    # measure positive (0.4 mm at the edge to 2.0 mm at the spine).
+    offsets = (points - centre) @ width
+    thickness = numpy.abs((points - centre) @ flat)
+    spread = offsets.std() * thickness.std()
+    correlation = float(((offsets - offsets.mean()) * (thickness - thickness.mean())).mean() / spread) if spread else 0.0
+    if correlation < 0:
+        width = -width
+
+    # Complete a right-handed frame so the correction stays a pure rotation.
+    flat = numpy.cross(long, width)
+    rows = numpy.asarray([flat, long, width]).tolist()
+
+    # Rotating about the world origin would shove the body off to one side: the
+    # imported model is not centred on it. Pivot on its own bounding box, then
+    # square the body up on the lateral and vertical axes the authored knives are
+    # built on (see the master stations in ``weapons/butterfly.py``). Placing the
+    # origin fore-and-aft along the grip stays ``recentre_grip``'s job.
+    rotation = Matrix(rows).to_4x4()
+    minimum, maximum = bounds(objects)
+    pivot = (minimum + maximum) * 0.5
+    for obj in objects:
+        obj.matrix_world = _translate_matrix(pivot) @ rotation @ _translate_matrix(-pivot) @ obj.matrix_world
+    apply_transform(objects)
+    minimum, maximum = bounds(objects)
+    centre = (minimum + maximum) * 0.5
+    for obj in objects:
+        obj.matrix_world = _translate_matrix(Vector((-centre.x, 0.0, -centre.z))) @ obj.matrix_world
+    apply_transform(objects)
+    bpy.context.view_layer.update()
+    def degrees(from_axis, to_axis):
+        return math.degrees(math.acos(max(-1.0, min(1.0, abs(float(numpy.dot(from_axis, to_axis)))))))
+    print("   blade aligned: yaw %.1f deg, roll %.1f deg (billet %.2f mm thick, spine r=%+.2f)"
+          % (degrees(raw_long, (0.0, 1.0, 0.0)), degrees(raw_flat, (1.0, 0.0, 0.0)),
+             thickness.mean() * 1000, correlation))
 
 
 def recentre_grip(objects, weapon_id, category):
@@ -438,6 +549,9 @@ def main():
     _debug_scales("after import", objects)
     normalise(objects, target_length, args.orientation, args.weapon, args.flip)
     _debug_scales("after normalise", objects)
+    if category == "knife":
+        align_knife(objects, args.weapon)
+        _debug_scales("after blade alignment", objects)
     recentre_grip(objects, args.weapon, category)
     _debug_scales("after recentre", objects)
     root, body = build_hierarchy(objects, args.weapon, category)

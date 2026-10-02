@@ -7,12 +7,8 @@
     "failures": [],
     "warnings": []
   },
-  "provenance": {
-    "author": "WoodenManufacturing",
-    "source": "https://sketchfab.com/3d-models/csgo-weapon-awp-gungnir-e1d6a40dc1f1499c8b960b05d13e7f6c",
-    "licence": "CC-BY-4.0"
-  },
-  "source_file": "csgo_weapon_awp_gungnir.glb",
+  "provenance": {},
+  "source_file": "awp_gungnir_model.glb",
   "variant": "gungnir",
   "weapon": "awp",
   "target_length_m": 1.24,

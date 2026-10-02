@@ -1,6 +1,7 @@
 import type { WeaponConfig } from '../weapons/WeaponConfig';
 import { weaponAsset } from './weaponAssets';
 import { localReferenceImage } from './localReferenceImages';
+import { cs2AssetSync, loadCs2Manifest } from './cs2Assets';
 
 export type WeaponCategory = 'pistols' | 'smgs' | 'rifles' | 'snipers' | 'shotguns' | 'machine-guns' | 'melee';
 export type WeaponSide = 'attackers' | 'defenders' | 'both';
@@ -167,15 +168,21 @@ export function getWeapon(id: string) { return weaponById.get(canonicalWeaponId(
 /** Development audit for missing and accidentally reused asset bindings. */
 export async function validateWeaponAssets() {
     const issues: { weapon: string; issue: string; path?: string }[] = [];
+    // Weapons the local CS2 conversion covers are modelled even when this
+    // project ships no GLB of its own for them, so they are not "missing".
+    await loadCs2Manifest();
     const models = new Map<string, string>();
     const paths = new Set<string>();
     for (const weapon of weaponRegistry) {
-        if (!weapon.modelPath) issues.push({ weapon: weapon.id, issue: 'missing model' });
+        const converted = cs2AssetSync(weapon.category === 'melee' ? knifeModelFamily[weapon.id] ?? weapon.id : weapon.id);
+        if (!weapon.modelPath && !converted) issues.push({ weapon: weapon.id, issue: 'missing model' });
+        else if (converted) paths.add(converted.view);
         else {
-            const other = models.get(weapon.modelPath);
-            if (other && other !== weapon.id) issues.push({ weapon: weapon.id, issue: `duplicate model shared with ${other}`, path: weapon.modelPath });
-            models.set(weapon.modelPath, weapon.id);
-            paths.add(weapon.modelPath);
+            const modelPath = weapon.modelPath!;
+            const other = models.get(modelPath);
+            if (other && other !== weapon.id) issues.push({ weapon: weapon.id, issue: `duplicate model shared with ${other}`, path: modelPath });
+            models.set(modelPath, weapon.id);
+            paths.add(modelPath);
         }
         if (!weapon.referenceImage && !weapon.thumbnail) issues.push({ weapon: weapon.id, issue: 'missing reference and thumbnail' });
         if (weapon.referenceImage) paths.add(weapon.referenceImage);

@@ -319,9 +319,21 @@ export class EquipmentPages {
         else if (element.dataset.collectionEquip) {
             const id = element.dataset.collectionEquip;
             const knife = KNIVES.find(item => item.id === id), skin = RIFLE_SKINS.find(item => item.id === id), pistolSkin = PISTOL_SKINS.find(item => item.id === id);
-            if (knife) this.game.loadout.setKnife(this.side, id as KnifeStyle, this.game.progress.unlockedKnife(id as KnifeStyle));
-            if (skin) this.game.loadout.setRifleSkin(this.side, id as RifleSkin, this.game.progress.unlockedRifleSkin(id as RifleSkin));
-            if (pistolSkin) this.game.loadout.setPistolSkin(this.side, id as PistolSkin, this.game.progress.unlockedPistolSkin(id as PistolSkin, this.game.loadout.get(this.side).startingPistol));
+            const side = this.side;
+            let equipped = false;
+            if (knife) equipped = this.game.loadout.setKnife(side, id as KnifeStyle, this.game.progress.unlockedKnife(id as KnifeStyle));
+            if (skin) equipped = this.game.loadout.setRifleSkin(side, id as RifleSkin, this.game.progress.unlockedRifleSkin(id as RifleSkin));
+            if (pistolSkin) equipped = this.game.loadout.setPistolSkin(side, id as PistolSkin, this.game.progress.unlockedPistolSkin(id as PistolSkin, this.game.loadout.get(side).startingPistol));
+            // Free-for-all has no sides, so it wears whatever was equipped here last.
+            // The pick is mirrored into the global appearance the settings keep,
+            // while the per-side rows stay the source of truth for defuse.
+            if (equipped) {
+                const data = this.game.settings.data;
+                if (knife) data.knifeStyle = id as KnifeStyle;
+                else if (skin) data.rifleSkin = id as RifleSkin;
+                else if (pistolSkin) data.pistolSkin = id as PistolSkin;
+                this.game.settings.save();
+            }
             this.render();
         }
     }

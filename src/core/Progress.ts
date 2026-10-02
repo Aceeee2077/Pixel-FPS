@@ -8,7 +8,10 @@ export const XP_PER_KILL = 50;
 export const WEAPON_ORDER: WeaponId[] = weaponRegistry.map(weapon => weapon.id);
 export const levelCost = (level: number) => 100 + 60 * Math.max(0, Math.min(level, MAX_LEVEL - 1));
 export const playerLevelCost = (level: number) => 150 + 50 * Math.max(0, level);
-export const KNIFE_UNLOCKS: Record<KnifeStyle, number> = { classic: 0, 'butterfly-fade': 1, 'm9-ruby': 3, 'butterfly-emerald': 5, 'karambit-emerald': 7 };
+// The owner-supplied fade butterfly is the one finish with no knife level gate:
+// it is equipable from the first match. The procedural gem finishes stay on the
+// knife XP curve.
+export const KNIFE_UNLOCKS: Record<KnifeStyle, number> = { classic: 0, 'butterfly-fade': 0, 'm9-ruby': 3, 'butterfly-emerald': 5, 'karambit-emerald': 7 };
 export const RIFLE_UNLOCKS: Record<RifleSkin, number> = { standard: 0, asimov: 2 };
 export const PISTOL_UNLOCKS: Record<PistolSkin, number> = { default: 0, copper: 1 };
 

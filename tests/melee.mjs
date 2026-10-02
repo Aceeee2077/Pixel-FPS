@@ -7,9 +7,11 @@ const page=await browser.newPage({viewport:{width:1440,height:900},locale:'en-US
 const errors=[],checks=[];
 page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
 const check=(name,value)=>{assert.ok(value,name);checks.push(name);console.log('PASS',name);};
-const state=()=>page.evaluate(()=>{const g=window.__game;return {knife:g.weapon.config.id==='knife',attack:g.weapon.attack,switchLeft:g.weapons.switchLeft,switching:g.weapons.switching,botHp:g.bots[0].hp,score:g.player.score,fov:g.camera.fov,hint:document.querySelector('#weapon-hint').textContent,marker:document.querySelector('#hitmarker').className,meleeCrosshair:document.querySelector('#crosshair').classList.contains('melee')};});
+const state=()=>page.evaluate(()=>{const g=window.__game;return {knife:g.weapon.config.id==='knife',weapon:g.weapon.config.id,slot:g.weapons.slot,slots:g.weapons.slots.map(w=>w.config.id),running:g.running,attack:g.weapon.attack,switchLeft:g.weapons.switchLeft,switching:g.weapons.switching,botHp:g.bots[0].hp,score:g.player.score,fov:g.camera.fov,hint:document.querySelector('#weapon-hint').textContent,marker:document.querySelector('#hitmarker').className,meleeCrosshair:document.querySelector('#crosshair').classList.contains('melee')};});
 /** Headless software rendering drops frames, so poll for a state instead of sleeping a fixed time. */
-async function waitFor(predicate,timeout=3000){const until=Date.now()+timeout;let seen=await state();while(!predicate(seen)&&Date.now()<until){await page.waitForTimeout(25);seen=await state();}return seen;}
+// Software WebGL renders the first-person weapon slowly, so the default poll
+// window is generous: these assertions are about state, not about frame rate.
+async function waitFor(predicate,timeout=10000){const until=Date.now()+timeout;let seen=await state();while(!predicate(seen)&&Date.now()<until){await page.waitForTimeout(25);seen=await state();}return seen;}
 async function freeze(){await page.evaluate(()=>{const g=window.__game;window.__updates=g.ais.map(ai=>ai.update);g.ais.forEach(ai=>ai.update=()=>{});});}
 async function move({range=1.8,facing='front'}={}){await page.evaluate(({range,facing})=>{const g=window.__game,p=g.player,b=g.bots[0];p.position.set(-2,0,18);p.velocity.set(0,0,0);p.grounded=true;p.alive=true;p.hp=100;p.protectedUntil=0;p.yaw=0;p.pitch=Math.atan2(1.05-1.65,range);p.recoil=0;g.bots.forEach((o,i)=>{o.position.set(60+i*2,0,70);o.velocity.set(0,0,0);o.protectedUntil=0;});b.position.set(-2,0,18-range);b.alive=true;b.hp=100;b.crouched=false;b.yaw=facing==='front'?Math.PI:0;g.weapon.cooldown=0;g.weapon.heat=0;g.weapon.reloadLeft=0;g.weapon.cancelAttack();g.weapons.switchLeft=0;g.weapons.switchTotal=0;p.update(.001,g.input,g.map);g.camera.updateMatrixWorld(true);},{range,facing});await page.waitForTimeout(50);}
 /**
@@ -36,12 +38,17 @@ function stab({kind='light',range=1.8,facing='front',frames=40}={}){
 }
 try{
   await page.goto('http://127.0.0.1:5173');await page.waitForFunction(()=>window.__game);
-  await page.locator('#play').click();await page.waitForTimeout(250);await freeze();
+  // Starting a match also waits for the first-person weapon to decode.
+  await page.locator('#play').click();await page.waitForFunction(()=>window.__game.running,null,{timeout:15000});await freeze();
   check('Match runs with the knife in slot 3',await page.evaluate(()=>{const g=window.__game;return g.running&&g.weapons.slots[2].config.id==='knife'&&!!g.weapons.slots[2].config.melee;}));
   check('Knife exposes only a light and a heavy stab',await page.evaluate(()=>{const k=window.__game.weapons.slots[2].config;return !!k.melee.light&&!!k.melee.heavy&&k.reserveAmmo===0&&k.magazineSize===1;}));
   check('The knife slot is labelled with the equipped blade',await page.evaluate(()=>document.querySelector('#slot2').textContent.trim()==='3战术匕首'));
   // Draw animation: the blade rises over time and the knife stays unusable until it is up.
-  await page.keyboard.press('Digit1');await page.waitForTimeout(400);
+  // Let the queued key press be consumed by a frame before driving the slot
+  // directly. Waiting on a fixed delay is not enough here: software WebGL can
+  // take longer than that to run one frame, and a key still sitting in the
+  // input queue would undo the direct selection on the next tick.
+  await page.keyboard.press('Digit1');await page.waitForFunction(()=>window.__game.input.pressed.size===0,null,{timeout:10000});
   await page.evaluate(()=>window.__game.weapons.select(2));
   const drawing=await waitFor(s=>s.knife&&s.switching&&s.hint==='正在出刀…',2000);
   check('Switching to the knife plays a draw animation',drawing.knife&&drawing.switching&&drawing.switchLeft>0);
@@ -54,7 +61,7 @@ try{
   const idle=await waitFor(s=>!s.switching,4000);
   check('Draw finishes and the knife becomes usable',!idle.switching&&idle.knife);
   check('Idle knife HUD advertises light and heavy stabs',idle.hint.includes('左键轻击')&&idle.hint.includes('右键重击'));
-  check('Knife HUD swaps the ammo line for stab damage and drops the reload key',await page.evaluate(()=>{const g=window.__game,panel=document.querySelector('#ammo'),box=panel.closest('.ammo');return panel.textContent.replace(/\s+/g,'')===`${g.weapon.config.melee.light.damage}/${g.weapon.config.melee.heavy.damage}`&&document.querySelector('#weapon-label').textContent==='轻击 / 重击伤害'&&box.querySelector('kbd').classList.contains('hidden');}));
+  check('Knife HUD drops the ammo readout and keeps only the blade name',await page.evaluate(()=>{const panel=document.querySelector('#ammo'),box=panel.closest('.ammo'),label=document.querySelector('#weapon-label').textContent.trim();return panel.textContent.trim()===''&&box.classList.contains('melee')&&label.length>0&&!/\d/.test(label)&&box.querySelector('kbd').classList.contains('hidden');}));
   check('Knife uses melee crosshair styling',idle.meleeCrosshair);
   // Light stab: fast wind-up, 45 to the body, and it never scopes or fires.
   const light=await stab({kind:'light'});
@@ -123,4 +130,4 @@ try{
   check('No two animation frames render the same pose',new Set(Object.values(poses).map(p=>`${p.cx.toFixed(4)}:${p.cy.toFixed(4)}`)).size===6);
   check('No browser console errors or exceptions',errors.length===0);
   fs.writeFileSync('test-results/melee-report.json',JSON.stringify({passed:checks.length,checks,errors,poses},null,2));
-}catch(e){await page.screenshot({path:'test-results/melee-failure.png'});console.error('FAILED',e);console.error('BROWSER ERRORS',errors);console.error('STATE',await state().catch(()=>null));fs.writeFileSync('test-results/melee-report.json',JSON.stringify({checks,errors,failure:String(e)},null,2));process.exitCode=1;}finally{await browser.close();}
+}catch(e){await page.screenshot({path:'test-results/melee-failure.png'}).catch(()=>{});console.error('FAILED',e);console.error('BROWSER ERRORS',errors);console.error('STATE',await state().catch(()=>null));fs.writeFileSync('test-results/melee-report.json',JSON.stringify({checks,errors,failure:String(e)},null,2));process.exitCode=1;}finally{await browser.close();}

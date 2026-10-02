@@ -1,4 +1,4 @@
-import { KNIVES, RIFLE_SKINS, type WeaponAppearance } from '../weapons/WeaponAppearance';
+import { KNIVES, PISTOL_SKINS, RIFLE_SKINS, type WeaponAppearance } from '../weapons/WeaponAppearance';
 import { skinById } from '../weapons/WeaponSkins';
 import { DEFAULT_MAP_ID, MAPS, RANDOM_MAP_ID } from '../world/Maps';
 import type { Lang } from './I18n';
@@ -35,6 +35,7 @@ export class Settings {
                 this.data.map = saved.map;
             if (KNIVES.some(k => k.id === saved.knifeStyle)) this.data.knifeStyle = saved.knifeStyle;
             if (RIFLE_SKINS.some(s => s.id === saved.rifleSkin)) this.data.rifleSkin = saved.rifleSkin;
+            if (PISTOL_SKINS.some(s => s.id === saved.pistolSkin)) this.data.pistolSkin = saved.pistolSkin;
             // Owner-supplied variants are validated against the registry, so a key
             // left over from an older build can never break the viewmodel.
             if (saved.weaponSkins && typeof saved.weaponSkins === 'object') {
