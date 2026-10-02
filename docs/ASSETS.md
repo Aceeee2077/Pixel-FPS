@@ -40,3 +40,16 @@ npm run build
 node tests/maps.mjs   # 十张地图的碰撞/导航确定性验收
 node tools/shot.mjs   # 生成 test-results/blockyard-glb.png 实机截图
 ```
+
+## README 配图
+
+`README.md` / `README-EN.md` 里的界面截图由 `tools/readme-shots.mjs` 驱动真实界面重新拍摄：
+
+```sh
+npm run readme:shots                      # 中文界面：menu / armory / gameplay + docs/maps 十张地图
+npm run readme:shots -- --lang=en --only=menu,armory,gameplay   # 英文界面：*-en.png
+```
+
+默认从线上站点取景，因此配图始终等于访客看到的版本（发布的是 `public/assets/weapons/`
+里的自研模型，而不是本地转换的 Counter-Strike 模型）；也可以加 `--url=http://127.0.0.1:4173`
+对本地 `npm run preview` 取景。

@@ -6,7 +6,7 @@
 
 Ten maps · Solo / 8-player online · Random supplies · Six weapons · Bilingual UI
 
-<img src="docs/menu.png" width="860" alt="BlockStrike main menu">
+<img src="docs/menu-en.png" width="860" alt="BlockStrike main menu">
 
 ![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)
@@ -30,8 +30,8 @@ Choose ONLINE MATCH in the lobby to create a room or join with an eight-characte
 The interface is bilingual: switch with **中文 · EN** in the top right of the lobby, or from Settings after pausing. The choice is stored locally, and a first visit follows your browser language.
 
 <p align="center">
-  <img src="docs/gameplay.png" width="48%" alt="In-game">
-  <img src="docs/armory.png" width="48%" alt="Armory">
+  <img src="docs/gameplay-en.png" width="48%" alt="In-game">
+  <img src="docs/armory-en.png" width="48%" alt="Armory">
 </p>
 
 ## Quick start

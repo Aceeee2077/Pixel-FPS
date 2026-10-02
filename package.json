@@ -17,6 +17,7 @@
     "assets:cs2:scan": "node tools/cs2-assets/scan.mjs",
     "verify": "npm run publish:weapons && npm run build && npm test",
     "preview": "vite preview --host 0.0.0.0",
+    "readme:shots": "node tools/readme-shots.mjs",
     "test": "node tests/world.mjs && node tests/smoke.mjs && node tests/melee.mjs && node tests/maps.mjs && node tests/progress.mjs && node tests/defuse.mjs && node tests/defuse-game.mjs && node tests/recoil.mjs && node tests/knife-assets.mjs && node tests/weapon-overhaul.mjs && node tests/weapon-assets.mjs",
     "test:weapons": "node tests/weapon-assets.mjs",
     "test:capture": "node tests/capture.mjs",
